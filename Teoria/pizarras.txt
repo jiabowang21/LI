@@ -1,0 +1,3558 @@
+
+Aquí figuran las pizarras de todas las clases por orden cronológico inverso (las más recientes primero).
+Hay alguna errata corregida (busca "ERRATA").
+
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+
+Teoría Clase 12.
+
+
+Por ejemplo, el ejercicio 6 del examen final de 2017 otoño.
+
+6) Consider the following Prolog program and its well-known behaviour:
+
+animals([dog,lion,elephant]).
+bigger(lion,cat).
+faster(lion,cat).
+better(X,Y):- animals(L), member(X,L), bigger(X,Y), faster(X,Y).
+
+?- better(U,V).
+U = lion
+V = cat
+
+In Prolog, a list like [dog,lion,elephant] is in fact represented as a term
+f(dog,f(lion,f(elephant,emptylist))).
+
+Therefore, we assume that the program also contains the standard clauses for member like this:
+member( E, f(E,_) ).
+member( E, f(_,L) ):- member(E,L).
+
+Instead of:
+member( E, [E|_] ).
+member( E, [_|L] ):- member(E,L).
+
+
+Express the program as a set of first-order clauses P and prove that ∃u ∃v better(u, v) is a logical consequence
+of P. Which values did the variables u and v get (by unification) in your proof? Only write the steps and
+values. No explanations.
+
+
+a --> b  ====  -a v  b
+better(X,Y) <---     animals(L) &  member(X,L) &  bigger(X,Y) &  faster(X,Y)
+better(X,Y)   v   -( animals(L) &  member(X,L) &  bigger(X,Y) &  faster(X,Y) )
+better(X,Y)   v     -animals(L) v -member(X,L) v -bigger(X,Y) v -faster(X,Y)
+
+
+Las cláusulas de P son las siguientes:
+
+1. animals( f(dog,f(lion,f(elephant,emptylist)))  )
+2. bigger(lion,cat)
+3. faster(lion,cat)
+4. better(X,Y)   v   -animals(L)  v  -member(X,L)  v  -bigger(X,Y)  v  -faster(X,Y)
+5. member( E, f(E,_) )
+6. member( E, f(_,L) )  v  -member(E,L).
+
+La negación de ∃u ∃v better(u,v) es:
+- ∃u ∃v better(u, v)
+Au -∃v better(u, v)
+Au Av -better(u, v)
+
+que en forma clausal (omitiendo los Au Av) es:
+7. -better(u, v)
+
+Resolución en LPO:
+
+                A v C         -B v D      A,B son átomos
+                --------------------      si σ = mgu(A,B)   most general unifier
+                       (C v D)σ
+
+Tengo que obtener la [] mediante resolución a partir de estas 7 cláusulas.
+   res entre     mgu                                          obtenemos:
+   
+ 8.  4+7      { u=X, v=Y}                                   -animals(L)  v  -member(X,L)  v  -bigger(X,Y)  v  -faster(X,Y)
+ 9.  1+8      { L=f(dog,f(lion,f(elephant,emptylist)))   }  -member(X,f(dog,f(lion, ...)  v  -bigger(X,Y)  v  -faster(X,Y)
+10.  6+9      { E=X, L=f(lion,f(elephant,emptylist))     }  -member(X,f(lion, ...))       v  -bigger(X,Y)  v  -faster(X,Y)
+11.  5+10     { X=lion,E=lion, _ = f(elephant,emptylist) }  -bigger(lion,Y)  v  -faster(lion,Y)
+12.  2+11     { Y=cat }                                     -faster(lion,cat)
+13.  3+12     { }                                           []
+
+u=X=lion
+v=Y=cat
+
+Hemos visto que no solo hemos demostrado que P |= ∃u ∃v better(u, v),
+sino que incluso hemos calculado dos valores concretos de u y v.
+
+
+
+Problem 4) Final exam january 2021 (3 points)
+
+For 4a and 4b, just write the simplest and cleanest possible formula F. Use no more
+predicate or function symbols than just p. Give no explanations.
+
+4a) Write a satisfiable first-order formula F, using only a binary predicate p, such that all models I
+of F have an infinite domain D_I.
+
+Respuesta:
+Ax -p(x,x)                                       (irreflexividad)
+&
+Ax Ay Az ( p(x,y) & p(y,z) --> p(x,z) ).         (transitividad)
+&
+Ax Ey p(x,y)                                     ("existencia de sucesores")
+
+
+4b) Write a satisfiable formula F of first-order logic with equality, using only a unary predicate p,
+such that F expresses that there is a single element satisfying p, that is, all models I of F have a
+single (unique) element e in its domain D_I such that p_I(e) = true.
+
+Respuesta:
+Ex (   p(x)  &  Ay ( -eq(x,y) --> -p(y) )    )
+
+
+
+Problem 5) Final exam january 2021 (3 points)
+Let F be the first-order formula ∃x∀y∃z ( p(z, y) ∧ ¬p(x, y) ).
+5a) Give a model I of F with D_I = {a, b, c}.
+
+
+Respuesta:
+D_I = {a, b, c}
+p_I(a,a)=1
+p_I(a,b)=1
+p_I(a,c)=1
+p_I(b,a)=0
+p_I(b,b)=0
+p_I(b,c)=0
+p_I(c,a)= no importa
+p_I(c,b)= no importa
+p_I(c,c)= no importa
+
+
+
+5b) Is it true that F |= ∀x p(x,x)?
+Respuesta:
+No. porque existe una I tal que I es modelo de F, es decir I |= F, pero I no es modelo de ∀x p(x, x).
+Y esa I es la del apartado 5a).
+
+
+
+5c) Is there any model of F with a single-element domain?
+Respuesta:
+No. Si tuviéramos D_I = {e}, tendríamos que definir
+p_I(e,e)=1 
+o bien
+p_I(e,e)=0
+En ambos casos, si x=e y=e z=e, no se cumple   p_I(e,e) ∧ ¬p_I(e,e)
+
+
+
+Problem 6) Final exam january 2021 (4 points):
+Formalize and prove by resolution that sentence F is a logical consequence of the first five:
+A: All people that have electric cars are ecologists.
+B: If someone has a grandmother, then that someone has a mother whose mother is that grandmother.
+C: A person is an ecologist if his/her mother is an ecologist.
+D: Mary is John’s grandmother.
+E: Mary has an electric car.
+F: John is an ecologist.
+
+Respuesta:
+
+hasEcar(x)      === "x has an electric car"
+isEcologist(x)  === "x is an ecologist"
+mother(x,y)     === "y is the mother of x"
+grandma(x,y)    === "y is the grandmother of x"
+
+A: All people that have electric cars are ecologists.
+Ax ( hasEcar(x) --> isEcologist(x) )
+-hasEcar(x) v isEcologist(x)
+  
+B: If someone has a grandmother, then that someone has a mother whose mother is that grandmother.
+
+======================= NO:
+Ax   (  Ey  (  grandma(x,y) -->  Ez (mother(x,z) & mother(z,y))   )   )
+Ax   (  Ey  ( -grandma(x,y)  v   Ez (mother(x,z) & mother(z,y))   )   )
+
+Esta formalización del lenguaje natural no es adecuada: si tenemos una situación I con personas D_I={p1,p2,abuela}
+y donde la abuela de p1 es abuela:
+grandma_I(p1,abuela)=true
+y todo lo demás es falso (nadie es madre de nadie, etc.)
+entonces I satisface la fórmula, porque Ax Ey -grandma(x,y).
+De hecho, con esta formalización no es posible obtener la cláusula vacía. 
+=======================
+
+Lo que sí es correcto es:
+
+Ax Ay  (  grandma(x,y) -->  Ez ( mother(x,z      ) & mother(z,      y) )  )
+Ax Ay  ( -grandma(x,y)  v   Ez ( mother(x,z      ) & mother(z,      y) )  )  Skolem:
+Ax Ay  ( -grandma(x,y)  v      ( mother(x,fz(x,y)) & mother(fz(x,y),y) )  )  Distrib:
+
+B1     -grandma(x,y)  v  mother(x,fz(x,y))
+B2     -grandma(x,y)  v  mother(fz(x,y),y))
+
+
+C: A person is an ecologist if his/her mother is an ecologist.
+Ax   (  Ey  (mother(x,y) &  isEcologist(y) ) --> isEcologist(x) )
+Ax   ( -Ey  (mother(x,y) &  isEcologist(y) )  v  isEcologist(x) )
+Ax   (  Ay -(mother(x,y) &  isEcologist(y) )  v  isEcologist(x) )
+Ax   (  Ay  -mother(x,y) v -isEcologist(y) )  v  isEcologist(x) )
+-mother(x,y)  v  -isEcologist(y)  v  isEcologist(x)
+
+
+D: Mary is John’s grandmother.
+grandma(john,mary)
+
+E: Mary has an electric car.
+hasEcar(mary)
+
+F: John is an ecologist.
+-F: John is not an ecologist.
+-isEcologist(john)
+
+
+Queremos demostrar que A & B & C & D & E |= F.
+Y esto pasa  ssi  A & B & C & D & E & -F es insatisfactible.
+
+A      -hasEcar(x) v isEcologist(x)
+B1     -grandma(x,y)  v  mother(x,fz(x,y))
+B2     -grandma(x,y)  v  mother(fz(x,y),y))
+C      -mother(x,y)  v  -isEcologist(y)  v  isEcologist(x)
+D      grandma(john,mary)
+E      hasEcar(mary)
+-F     -isEcologist(john)
+
+
+Tengo que obtener la [] mediante resolución a partir de estas 7 cláusulas.
+     res entre     mgu               obtenemos:
+1.   E+A           {x=mary}          isEcologist(mary)
+2.   D+B1          {x=john,y=mary}   mother(john,fz(john,mary))
+... (ver el examen resuelto)
+
+
+
+
+
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+
+Teoría Clase 11.
+
+
+Unificación:
+------------
+-una "substitución" sigma σ es un conjunto de pares variable-término: { x1=t1 ... xn=tn }
+-"aplicar una substitución":  si σ  es {x=f(a), y=b} y t es el término (o átomo) g(f(x),y)) entonces tσ es  g(f(f(a)),b)
+-dos términos s y t son "unificables" si existe una σ tal que sσ = tσ
+
+-σ es el "unificador más general" (most general unifier, mgu) de dos términos s y t si:
+     sσ = tσ   (σ es unificador)
+     y además es el unificador más general: 
+              para todo σ', si tenemos que si sσ' = tσ' entonces hay un σ'' tal que σ' es σ σ''
+
+
+por ejemplo:  unificar  f(x,y) con f(a,z)
+     el mgu σ = { x=a, y=z }
+     otro unificador σ' puede ser σ' = { x=a,  y=a,  z=a }  pero no es el más general. es un caso particular del mgu σ.
+      existe σ'' = {y=a, z=a}  
+       y tengo que σ' = σ σ''.
+
+
+
+Algoritmo de unificación:
+========================
+
+Yo quiero unificar dos términos s y t  (o dos átomos s y t, a efectos de unificación es lo mismo).
+Escribiremos el problema de unificación como conjuntos de igualdades { s=t }:
+
+
+
+0.   E   U  { t=t }                          ===>   E
+1.   E   U  { f(...) = g(...) }              ===>   fallo                   si f != g          (no son unificables!)
+2.   E   U  { f(s1....sn) = f(t1....tn) }    ===>   E U  {s1=t1 ... sn=tn}
+3.   E   U  { x=t }                          ===>   fallo                   si x aparece en t  y  x no ES t   (por ej. x=f(x))
+4.   E   U  { x=t }                          ===>   E{x=t}  U  {x=t}        si x NO aparece en t
+                                                                             y además x SI aparece en E
+
+Ejemplo:  
+{ f(x,g(x,a)) = f(h(b),z)     }  ==2=> 
+{ x = h(b),   z = g(x,a)      }  ==4=>   { x = h(b),   z = g( h(b),a)  }        esto es el mgu!
+  --------    ----------
+    x=t          E
+
+
+podria volver a aplicar la regla 4, pero no haría nada (por eso exigimos que x SÍ aparezca en E).
+Lo que tenemos que pensar:
+   -estas reglas terminan?  (o necesitamos algo más para que terminen?)
+   -dan lugar al mgu del problema inicial?
+
+----------------------------------------------
+Pequeño ejemplo de recapitulación:
+
+Ejemplo:
+Quiero saber si F |= G en LPO. Aqui F y G son fórmulas cualesquiera.   ¿Qué hago?
+F |= G                                     ssi
+la fórmula  F & -G es insat                ssi
+S = forma_clausal( F & -G ) es insat       ssi  (casi)
+la cláusula vacía [] está en Res(S)              (puedo obtener [] mediante resolucion a partir del conjunto de cláusulas S)
+
+
+S0 = S
+S1 = S0 U Res1(S0)
+S2 = S1 U Res1(S1)
+...
+
+Res(S) = U i=0 hasta infinito de las S_i
+
+
+Un detalle importante!!!!  Res(S) NO es exactamente la clausura bajo sólo resolución!!
+Hace falta una regla deductiva adicional: la factorización.  Vamos a ver por qué:
+
+
+Un ejemplo. Un conjunto S de dos cláusulas:
+  { p(x) v   p(y),
+   -p(z) v  -p(z') }
+
+S es SAT o INSAT?    
+
+Supongamos que S fuera SAT.
+Entonces habría un modelo I con al menos un elemento en su dominio D_I (los dominios siempre son no-vacios).
+Llámemosle "e" a ese elemento: 
+D_I = { e, ... }  
+¿Cómo puede ser p_I(e)?  ¿cierto o falso?
+  -por la primera cláusula Ax Ay  p(x) v p(y)   en el caso donde x=y=e,  necesito que p_I(e) = 1
+  -por la segunda cláusula                           (caso donde z=z'=e)  necesito que p_I(e) = 0
+Contradicción! No existe ningún modelo!!! Luego S es INSAT.
+
+Puesto que S es INSAT, mediante resolución deberíamos poder obtener [] a partir de S.
+  { p(x) v   p(y),
+   -p(z) v  -p(z') }
+Pero no es posible obtener [] !!
+Puedo hacer, por ejemplo, esta resolución:
+    p(x) v   p(y)        -p(z) v  -p(z')
+    ----                 -----
+   -------------------------------------- mgu( p(x), p(z) ) = {x=z}
+              p(y) v -p(z')
+
+En las cláusulas de S,  los literales no comparten variables.
+Lo único que puedo obtener mediante resolución son otras cláusulas donde los literales tampoco comparten variables.
+Y por eso, en este ejemplo, siempre continuaré obteniendo cláusulas de dos literales!
+Y nunca saldrá la cláusula vacía [] !!
+
+Este ejemplo demuestra que la resolución por sí sola NO es refutacionalmente completa!!
+Si solo consideramos resolución, NO es verdad que     S insat   SSI   [] en Res(S).
+
+¿Qué es lo que falta?
+Hagamos el mismo "tipo" de ejemplo en L.proposicional:
+   p v  q
+   p v -q
+  -p v  q
+  -p v -q
+INSAT.
+Por resolución:
+   p v  q          p v -q                 -p v  q            -p v -q
+   -----------------------                --------------------------
+            p v p                                  -p v  -p
+              p                                       -p      <------ este paso de eliminar literales repetidos
+             ---------------------------------------------            lo tenemos que simular (extender) en LPO!!
+                                  []
+
+
+
+La Regla deductiva de Factorización en LPO es la que hace esto. Es la siguiente:
+                      -------------
+
+        A v B v  C                          donde   A y B átomos  (literales POSITIVOS), y  C es el resto de la cláusula
+    -----------------  sigma=mgu(A,B)
+       (A v C)sigma
+
+
+Por ejemplo:
+          A          B              C
+        p(a,x)  v  p(y,b)  v  q(x,y) v ...
+        ------------------------------------  sigma = mgu( p(a,x), p(y,b) ) = {x=b,y=a}
+            (p(a,x) v q(x,y) v ... ) sigma
+             p(a,b) v q(b,a) v ...
+
+
+¿En qué se basa esto?
+                  Si tengo:                        Ax Ay        p(a,x) v p(y,b) v q(x,y)
+                    en particular, tengo:                       p(a,b) v p(a,b) v q(b,a)     (es decir, lo mismo donde x=b , y=a)
+y sobre esto puedo eliminar literales repetidos como en L.Prop:          p(a,b) v q(b,a)
+
+
+
+Volvemos al ejemplo del conjunto S de dos cláusulas:
+1.  { p(x) v   p(y),
+2.   -p(z) v  -p(z') }
+
+Puedo aplicar factorización a la cláusula 1. !  :
+
+    p(x)  v  p(y)
+    -------------   sigma= mgu( p(x),p(y) ) = {y=x}      (aqui la parte C es vacía)
+3.       p(x)
+
+4. -p(z')    por resolución entre 2. y 3.:  sigma = mgu( -p(z), p(x) ) = {x=z}
+5. []        por resolución entre 3. y 4.:  sigma = mgu( -p(z'),p(x) ) = {x=z'}
+
+
+
+El teorema que SÍ es verdad en LPO:      S insat    SSI       [] en ResFact(S)
+
+Calculamos ResFact(S) por niveles:
+  S_0   = S
+  S_i+1 = S_i U Res1(S_i) U Fact1(Si)
+ResFact(S) = U_(i=0..infinito) Si 
+
+
+Última observación: ¿Qué pasa si S es (un conjunto de cláusulas de) Horn?
+   1. La regla de factorización no se aplica a cláusulas de Horn.
+   2. Si S es de Horn, haciendo resolución sólo obtengo cláusulas de Horn.
+Si S es Horn, entonces:                S insat    SSI       [] en Res(S)   (Si S es Horn no necesito factorización!!!, porque 
+                                                                             nunca tendré ocasión de aplicarla!)
+
+
+--------------------
+
+Lee los apuntes tema 6: programación lógica: 
+    -un programa Prolog es un conjunto de clausulas de Horn de LPO
+    -ejecutar un programa Prolog es hacer resolución (con una estrategia determinada, no es exactamente por niveles S0,S1,S2,...)
+Mira los ejercicios de examen donde se hace esto. Por ejemplo, el ejercicio 6 del examen final de 2017 otoño.
+
+
+
+--------------------
+
+Ejercicio 7 del tema 5. Formaliza los siguientes hechos:
+(a) “Todo dragón está feliz si todos sus hijos pueden volar”
+(b) “Los dragones verdes pueden volar”
+(c) “Un dragón es verde si es hijo de al menos un dragón verde”
+Demuestra por resolución que la conjunción de (a), (b) y (c) implica que:
+(d) “Todos los dragones verdes son felices”
+
+esfeliz(x)  == "x es feliz"
+hijode(x,y) == "un hijo de x es y"
+esverde(x)  == "x es verde"
+vuela(x)    == "x puede volar"
+
+necesitamos un predicado unario esdragon(x) ???   Funcionaría, pero NO hace falta, podemos asumir que todos lo elementos del
+                                                  dominio son dragones.
+
+
+(a) “Todo dragón está feliz si todos sus hijos pueden volar”
+(a) Ax (          ...                       --> esfeliz(x)    )   
+                      donde ... ha de decir que todos los hijos de x pueden volar:   Ay ( hijo(x,y)  -->  vuela(y) )
+    y nos queda:
+    Ax (  Ay ( hijode(x,y) --> vuela(y) )   --> esfeliz(x)    )
+
+
+(b) “Los dragones verdes pueden volar”
+(b) Ax ( esverde(x) --> vuela(x) )
+
+
+
+(c) “Un dragón es verde si es hijo de al menos un dragón verde”
+(c) Ax (          ...                       --> esverde(x)    )  
+                      donde ... ha de decir que x es hijo de al menos un dragon verde: Ey (hijode(y,x) & esverde(y))
+    y nos queda:
+    Ax (  Ey (hijo(y,x) & esverde(y))       --> esverde(x)    )
+
+
+
+La conjunción de (a), (b) y (c) implica (d)      SSI 
+a & b & c   |=   d                               SSI
+a & b & c  & -d      INSAT                       SSI
+S = formaclausal( a & b & c  & -d )     INSAT    SSI
+[]  está en   ResFact(S)
+
+
+(d)  “Todos los dragones verdes son felices”
+(-d) “No todos los dragones verdes son felices”   - Ax (  verde(x) -->  esfeliz(x) )
+                                                  -Ax ( -verde(x)  v   esfeliz(x) )
+                                                   Ex (  verde(x)  &  -esfeliz(x) )
+  Ex ( esverde(x) & -esfeliz(x)  )
+
+
+Pasamos todo a forma clausal:
+a)    Ax (     Ay   (  hijode(x,y)     --> vuela(y)     )    --> esfeliz(x)      )    eliminamos los -->
+      Ax (    -Ay   (  hijode(x,y)     --> vuela(y)     )     v  esfeliz(x)      )
+      Ax (    -Ay   ( -hijode(x,y)      v  vuela(y)     )     v  esfeliz(x)      )    mover la -
+      Ax (     Ey  -( -hijode(x,y)      v  vuela(y)     )     v  esfeliz(x)      )    mover la -  (de Morgan)
+      Ax (     Ey   (  hijode(x,y)      & -vuela(y)     )     v  esfeliz(x)      )    Skolemizar (eliminar el E)
+      Ax (          (  hijode(x,fy(x))  & -vuela(fy(x)) )     v  esfeliz(x)      )    distributividad  (F&G) v H ==> (FvH) & (GvH)
+      Ax (          (  hijode(x,fy(x))                        v  esfeliz(x) ) &
+                    (                     -vuela(fy(x))       v  esfeliz(x) )    ) 
+
+  esto nos da dos clausulas:
+a1) hijode(x,fy(x)) v esfeliz(x)
+a2) -vuela(fy(x))   v esfeliz(x) 
+
+
+(b) Ax (  esverde(x) --> vuela(x) )  eliminamos -->
+    Ax ( -esverde(x)  v  vuela(x) )
+  esto nos da una clausula:
+b) -esverde(x) v  vuela(x)
+
+
+(c)     Ax (  Ey  (  hijo(y,x)  &  esverde(y) )  -->  esverde(x)   )   eliminamos el -->
+        Ax ( -Ey  (  hijo(y,x)  &  esverde(y) )   v   esverde(x)   )   mover la -
+        Ax (  Ay -(  hijo(y,x)  &  esverde(y) )   v   esverde(x)   )   mover la -  con De Morgan
+        Ax (  Ay  ( -hijo(y,x)  v -esverde(y) )   v   esverde(x)   )
+        Ax    Ay  ( -hijo(y,x)  v -esverde(y)     v   esverde(x)   )
+esto nos da una clausula: 
+c)  -hijo(y,x) v -esverde(y) v esverde(x)       es como:   esverde(x):-   hijo(y,x), esverde(y).
+                                                           esverde(x)<--  hijo(y,x) & esverde(y).
+
+
+(-d)  Ex ( esverde(x ) & -esfeliz(x )  )        Skolem
+           esverde(cx) & -esfeliz(cx)
+  esto nos da dos clausulas:
+-d1) esverde(cx)
+-d2) -esfeliz(cx)
+
+
+Juntamos todas las cláusulas:
+a1)  hijode(x,fy(x)) v esfeliz(x)
+a2)  -vuela(fy(x))   v esfeliz(x) 
+ b)  -esverde(x) v  vuela(x)
+ c)  -hijode(y,x) v -esverde(y) v esverde(x)
+-d1) esverde(cx)
+-d2) -esfeliz(cx)
+
+Tenemos que hacer resolución (y factorización, por culpa de a1 que no es Horn) e intentar obtener []:
+                                       con:              mgu:
+1.  vuela(cx)                          res d1 con b      {x=cx}              <--- al final esta cláusula 1 no la usamos para nada!
+2.  hijode(cx,fy(cx))                  res d2 con a1     {x=cx}
+3.  -esverde(cx) v esverde( fy(cx) )   res 2. con c      {y=cx, x=fy(cx))}
+4.  esverde(  fy(cx) )                 res 3. con d1     {}
+5.  -vuela(   fy(cx) )                 res a2 con d2     {x=cx}
+6.  -esverde( fy(cx) )                 res 5. con b.     {x=fy(cx))}
+7.  []                                 res 4. con 6.     {}
+
+
+Nota: hay otras maneras de obtener [].
+
+---------------------
+
+Recuerda la lección del examen parcial. Para estudiar teoria de LI:
+- repasa los materiales de lo que hemos estudiado y 
+- HAZ LOS EXÁMENES COLGADOS, empezando por los últimos, hacia los anteriores, trabajando siempre primero 
+  el enunciado SIN resolver, y después el examen resuelto.
+
+
+Seguid haciendo los ejercicios del tema 5.
+Próxima (y última!!!) clase los haremos, y también los de examen que me propongáis!!!
+
+
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+
+Teoría Clase 10.
+
+¿Qué problemas son decidibles en LPO (o LPOI) y cuáles no?
+
+Consideramos problemas Booleanos = problemas de decisión = problemas con respuesta si/no.
+
+
+Definición:
+Un problema es DECIDIBLE si:
+     existe algun procimiento que siempre contesta correctamente, en tiempo finito (es decir, acaba).
+
+Dentro de los problemas decidibles, distinguimos clases de complejidad (en tiempo):
+logarítmico, lineal, cuadrático, polinómico, exponencial, NP-completo, ...
+
+
+Dentro de los problemas INdecidibles, distinguimos otras clases: semi-decidibles, co-semi-decidibles, ...
+
+
+
+En el contexto de la lógica, dos problemas importantes son:
+   1: evaluacion de una formula:    dados I y F, ¿tenemos I |= F?
+   2: SAT:                          dada una  F, ¿existe alguna I tal que I |= F?
+
+
+                    evaluación:       SAT:
+L.Proposicional:    lineal            NP-completo
+LPO:                indecidible       indecidible 
+
+SAT en LPO es co-semi-decidible: existe algun procedimiento que,
+      -si la respuesta es NO (es decir, F es insat), entonces contesta correctamente "NO" en tiempo finito
+      -si la respuesta es SI (es decir, F es   sat), o contesta correctamente "SI" o no termina
+
+
+En general:
+
+Un problema es semi-decidible si existe algun procimiento que,
+      -si la respuesta es SI, entonces contesta correctamente en tiempo finito
+      -si la respuesta es NO, o contesta correctamente "NO" o no termina
+
+Un problema es CO-semi-decidible si existe algun procimiento que,
+      -si la respuesta es NO, entonces contesta correctamente en tiempo finito
+      -si la respuesta es SI, o contesta correctamente "SI" o no termina
+
+
+
+Para qué queremos SAT en LPO?
+
+Para lo mismo en L.Prop, para las aplicaciones prácticas, y tenemos las propiedades:
+
+F SAT?
+F insat?
+F Taut?      ssi    -F insat                       ----> Taut en LPO es semi-decidible (pq es equivalente a un poblema de INsat)
+F |= G?      ssi    F & -G insat
+F === G?     ssi    F & -G   v   G & -F insat
+
+
+
+
+Evaluacion en LPO con dominio finito (es decir, la I dada tiene dominio finito) sí es decidible. ¿Por qué?
+
+Ejemplo de evaluacion en LPO con dominio finito:
+Sea la I dada:
+  D_I = {a,b}
+  p_I(a,a)=1
+  p_I(a,b)=1
+  p_I(b,a)=1
+  p_I(b,b)=0
+
+Sea la F dada: 
+  Ax Ey p(x,y)
+
+Ax1 Ey1 Ax2 Ey2 ... Axn Eyn  F
+decidible pero puede ser exponencial.
+
+
+
+Evaluacion en LPO con dominio INfinito es INdecidible en general. ¿Por qué?
+
+El halting problem (el problema de la parada): 
+     -dado un programa P, (o lo que es lo mismo, una máquina de Turing), ¿P termina?
+Este problema se demostró que era indecidible.
+
+A partir de aqui, se demostraron indecidibles otros problemas, mediante reducciones entre problemas.
+Por ejemplo, si puedes reducir el "halting problem"  a  "SAT en LPO" (hacerlo mediante SAT en LPO),...
+     entonces SAT en LPO tambien debe ser indecidible!
+
+
+El problema "Raiz": dado un polinomio como    x³y² + 3x⁴ + .... = 0,  ¿tiene soluciónes ("raices") enteras?
+     (encontrar raices de polinomios sobre varias variables de grado arbitrario y con productos entre variables).
+Este problema se demostró que era indecidible.  Se llama Hilbert's tenth problem.
+
+
+Podemos reducir Raiz a evaluacion en LPO con dominio infinito (hacer Raiz mediante evaluacion en LPO con dominio infinito):
+
+Sea I la interpretacion con D_I = Z (los enteros) donde  { f^2 , g^2 } se interpretan como suma y producto.
+
+F = ExEy   
+      Ez (  Ay f(z,y)=y  &  f(   g( g(x,g(x,x)), g(y,y) ),  f(f( g(g(x,x),g(x,x)),  g(g(x,x),g(x,x))), g(g(x,x),g(x,x)) ) ...  = z
+                                      x³          y²    +            x⁴+x⁴+x⁴                                         + ...  = 0
+
+Tenemos I |= F ssi x³y² + 3x⁴ + .... = 0 tiene raices enteras.
+
+
+Reducir Raiz al problema de evaluacion en LPO con dominio infinito:
+Si me dan un polinomio P, puedo construir una fórmula F_P, tal que
+si I es la interpretacion: D_I = Z (los enteros) donde  { f^2 , g^2 } se interpretan como suma y producto
+   tenemos I |= F_P ssi P tiene raices enteras.
+
+
+
+Tema 5: Deducción en LPO
+------------------------
+
+En L.Prop. teníamos varios métodos para SAT:  p v q v -r
+-El mejor método para SAT estaba basado en un algoritmo de backtracking con propagacion, etc., que explora el 
+ conjunto de posibles modelos (todas las interpretaciones). 
+ En LPO este método no existe. 
+ No hay manera de "enumerar" todas las I's.
+
+-Pero en L.Prop. vimos otro, basado en resolución, con el teorema:  un cjto de clausulas S es insat  ssi  [] está en Res(S).
+ En LPO, el único método para SAT que vamos a estudiar es el basado en resolución.
+
+
+Una cláusula en LPO es una disyunción de literales, como en L.Prop, pero en LPO los literales 
+ya no son sóbolos de predicado o símbolos de predicado negados, sino que son ÁTOMOS, o ÁTOMOS NEGADOS.
+Pueden contener variables, que TODAS se entienden que están universalmente cuantificadas:
+  Ax1 ... Axm  L1 v...v Ln    pero normalmente los Ax1 ... Axm no los escribimos.
+
+Un ejemplo de Prolog:
+  tio(S,T) :-   padre(S,P),   hermano(P,T).
+  tio(S,T) <--- padre(S,P) &  hermano(P,T)
+  tio(S,T) v   -( padre(S,P) &  hermano(P,T) )
+  tio(S,T) v   -padre(S,P) v -hermano(P,T)    es una cláusula de Horn de LPO ( y no escribimos los "para todo" A S  A T  A P  )
+
+
+Un literal es un átomo p(t1...tn)  o un átomo negado  -p(t1...tn).
+
+
+Para qué queremos SAT en LPO?
+
+Para lo mismo en L.Prop, para las aplicaciones prácticas, y tenemos las propiedades:
+
+F SAT?
+F insat?
+F Taut?      ssi    -F insat                       ----> Taut en LPO es semi-decidible (pq es equivalente a un poblema de INsat)
+F |= G?      ssi    F & -G insat
+F === G?     ssi    F & -G   v   G & -F insat
+
+
+Para poder hacer SAT en LPO mediante resolución:
+
+
+Transformación a forma clausal EQUISATISFACTIBLE (como pasaba con la transformacion de Tseitin en L.Prop)
+------------------------------------------------
+"Forma clausal" = conjunto (conjunción, un AND) de cláusulas.
+Equisatisfactible: Si una formula  F  tiene el cjto de clausulas S como forma clausal, tenemos que:   F sat ssi S sat.
+
+
+1. Movimiento de las negaciones hacia dentro:
+   ¬(F ∧ G)  ⇒ ¬F ∨ ¬G
+   ¬(F ∨ G)  ⇒ ¬F ∧ ¬G
+   ¬¬F       ⇒ F
+   ¬∃xF      ⇒ ∀x¬F
+   ¬∀xF      ⇒ ∃x¬F
+
+2. Eliminación de conflictos de nombre de variable:
+    por ejemplo:   Ax p(x) &  Ex q(x)    ===>     Ax p(x) &  Ex' q(x')
+
+3. [Opcional; es solo por eficiencia] Movimiento de cuantificadores hacia dentro mientras sea posible:
+    por ejemplo:   Ax ( p(a) & q(x) )  ==>  p(a)  &  Ax q(x)
+
+4. Eliminación de cuantificadores existenciales o Skolemización:
+                 (es el único paso de los 6 que NO preserva la equivalencia logica; pero sí la equisatisfactibilidad)
+    2 ejemplos:   
+      1.  Ax Ey p(x,y)  ----sk--->   Ax p( x, f_y(x) )  donde f_y es un simbolo de funcion nuevo "fresco"
+      2.  Ey Ax p(x,y)  ----sk--->   Ax p( x,    c_y )  donde c_y es un simbolo de funcion nuevo "fresco" (en este caso, una cte)
+
+Si tenemos la interpretacion I tal que:
+  D_I = {a,b}
+  p_I(a,a)=0
+  p_I(a,b)=1
+  p_I(b,a)=1
+  p_I(b,b)=0
+tenemos que    I |=  Ax Ey p(x,y)
+pero        NO I |=  Ey Ax p(x,y).
+
+Intuitivamente, tenemos que     Ey Ax p(x,y)    |=   Ax Ey p(x,y).
+   en general: la Skolemizacion reemplaza cada y existencialmente cuantificada por f_y(x1....xk) donde 
+   las x1...xk son las variables universales en cuyo ámbito se encuentra la y  y donde f_y es un símbolo nuevo.
+
+-----------------------------
+La Skolemización NO da una fórmula lógicamente equivalente:
+    tenemos Ax Ey p(x,y)  ----sk--->   Ax p( x, f_y(x) )
+    damos una I tal que 
+           I |=  Ax Ey p(x,y)  
+        NO I |=  Ax p( x, f_y(x) ) 
+
+     D_I = {a,b}
+
+     p_I(a,a)=0
+     p_I(a,b)=1
+     p_I(b,a)=1
+     p_I(b,b)=0
+
+     f_y_I(a) = a
+     f_y_I(b) = a
+
+    esto es modelo de Ax Ey p(x,y)   pero    NO es modelo de  Ax p( x, f_y(x) ).
+
+----------------
+
+   En cambio, si interpreto  f_y  así  (es decir, "bien", como lo hacía el existe en Ax Ey p(x,y) ):
+     f_y_I(a) = b
+     f_y_I(b) = a
+   entonces  f_y_I  "escoge" el valor adecuado para que I SÍ sea modelo de Ax p( x, f_y(x) ).
+   En general:
+     Si F ----sk---> F' entonces dado un modelo de F puedo construir un modelo de F', y vice versa: 
+                                  F y F' son equisatisfactibles.
+
+----------------
+
+
+
+5. Movimiento de cuantificadores universales hacia fuera: por ejemplo:   F & Ax G   ===>   Ax F & G
+
+6. Distributividad con:   (F ∧ G) ∨ H ⇒ (F ∨ H) ∧ (G ∨ H)   (esto puede hacer crecer la fórmula exponencialmente, porque 
+                                                             la parte H se duplica; hay métodos similares a Tseitin para
+                                                             evitar este problema).
+
+
+Resolución en LPO:
+------------------
+
+
+Recordemos: Resolución en L.Proposicional:
+                p v C         -p v D
+                --------------------
+                       C v D
+
+             S insat   ssi   [] está en Res(S)           este teorema también es cierto en LPO (bueno, "casi
+	                                                 cierto"; ver más adelante)
+
+S0 = S
+S1 = S0 U Res1(S0)      ( Res1(S0) = lo que puedo obtener en 1 paso de resolucion a partir de S0)
+S2 = S1 U Res1(S1)      ( Res1(S1) = lo que puedo obtener en 1 paso de resolucion a partir de S1)
+...                     ...
+
+Res(S) = U i=0 hasta infinito de las S_i
+
+
+
+Resolución en LPO:
+
+                A v C         -B v D      A,B son átomos
+                --------------------      si σ = mgu(A,B)   most general unifier
+                       (C v D)σ
+
+
+Ejemplo: x,y son vars    a,b son ctes:
+
+     p(a,x) v q(x)       -p(y,b) v r(y)
+     ----------------------------------    si σ = {x=b, y=a}
+                ( q(x) v r(y) )σ                                        =                 q(b) v r(a)
+
+
+     p(a,b) v q(b)        -p(a,b) v r(a)
+     -----------------------------------
+                    q(b) v r(a)
+
+
+
+
+En LPO, la resolución puede no terminar:
+
+
+   p(a)         -p(x) v p(f(x))
+   ----------------------------- mgu( p(a), p(x) ) = { x=a } :
+            p(f(a))
+
+
+   p(f(a))      -p(x) v p(f(x))
+   ----------------------------- mgu( p(f(a)), p(x) ) = { x=f(a) } :
+            p(f(f(a)))
+
+
+
+1.   p(a)
+2.  -p(x) v p(f(x))
+---------------------   puedo obtener, con mgu( p(a), p(x) ) = { x=a } :
+3.   p(f(a))            3. con la 2.   con mgu( p(f(a)), p(x) ) = { x = f(a) } :
+4.   p(f(f(a)))         4. con la 2.   con mgu( p(f(f(a))), p(x) ) = { x=f(f(a)) } :
+5.   p(f(f(f(a)))) 
+6.   ...
+
+
+El mismo ejemplo, de forma más "natural":
+1.   nat(0)
+2.  -nat(x) v nat(succ(x))
+
+
+Otro ejemplo de no-terminación, sin símbolo de función:
+1.  -p(x,y)  v -p(y,z)  v p(x,z)
+
+
+1.    -p(x, y )  v -p( y,z )  v p( x,z )
+                                --------  
+
+      -p(x',y')  v -p(y',z')  v p(x',z')  
+      ---------
+
+el mgu es {x'=x, y'=z} y obtenemos:
+
+2. -p(x, y )  v -p( y,z )  v -p(z,z')  v  p(x,z')   (una especie de "transitividad de 4") 
+... etc.
+
+
+
+
+Próximo día: Unificación.   Ver el capitulo p5.pdf de los apuntes y los ejercicios.
+
+
+
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+
+Teoría Clase 9.
+
+
+Una fórmula F "EXPRESA" cosas: las propiedades de sus modelos.
+
+
+
+21. (dificultad 3) Da una fórmula F3 tal que todo modelo de F3 tenga al menos 3
+elementos. Generalízalo a n cualquiera.
+Ayuda: define la propiedad reflexiva de un símbolo de predicado binario p, y
+además expresa que hay pares de elementos e_i y e_j en el dominio tales que p_I(e_i,e_j) = 0.
+
+
+Comenzamos así. Sea F la formula:
+
+Ax p(x,x)    (reflexividad)
+
+& 
+
+Ex Ey -p(x,y)
+
+
+
+Cualquier modelo I de F tendrá al menos DOS elementos:
+D_I = { e1, e2 }
+p_I( e1, e1 ) = 1   (POR REFLEXIVIDAD)
+p_I( e1, e2 ) = 0
+p_I( e2, e1 ) = 0
+p_I( e2, e2 ) = 1   (POR REFLEXIVIDAD)
+
+
+Porque si hubiera uno solo:
+D_I = { e1 }
+tendriamos
+p_I( e1, e1 ) = 1   (POR REFLEXIVIDAD)
+y no se cumpliría la parte Ex Ey -p(x,y).
+
+
+Lo podemos genralizar a tres o más elementos, así:
+Comenzamos así. Sea F la formula:
+
+Ax p(x,x)                                       (reflexividad)
+& 
+Ex Ey Ez ( -p(x,y)  & -p(x,z)  &  -p(y,z) )
+
+
+Y en general para máximo n elementos en el dominio:
+Ax p(x,x)                                       (reflexividad)
+& 
+Ex1 ... Exn ( -p(x1,x2)  & ... & -p( x_n-1, xn) )         (una fórmula de tamaño cuadrático)
+
+
+
+
+
+
+
+
+22. (dificultad 5) Escribe una fórmula F satisfactible que no tenga modelos finitos.
+Es decir, F es satisfacible y tal que si I |= F entonces D_I tiene infinitos elementos. 
+Ayuda: piensa en la relación ‘ser estrictamente menor que’ y expresa
+(entre otras cosas) que ‘no hay máximo’ tal como ocurre en los naturales.
+
+Definición:  un **orden estricto**  es una relacion binaria   irreflexiva  y  transitiva.
+
+
+Usamos un símbolo binario p que tiene esas dos propiedades. Sea F la fórmula:
+
+Ax -p(x,x)                                       (irreflexividad)
+&
+Ax Ay Az ( p(x,y) & p(y,z) --> p(x,z) ).         (transitividad)     equivalentemente:   Ax Ay Az  -p(x,y) v  -p(y,z) v p(x,z) 
+
+
+En cualquier modelo I de F, tenemos que p_I es una relacion de orden estricto sobre D_I.
+
+Esto hace que necesitemos que D_I sea infinito en cualquier modelo I de F?
+No, porque tendríamos el modelo de F: 
+D_I = { a }
+p_I(a,a)=0
+
+
+
+Por eso añadimos: Ax Ey p(x,y) a nuestra F:
+Ax -p(x,x)                                       (irreflexividad)
+&
+Ax Ay Az ( p(x,y) & p(y,z) --> p(x,z) ).         (transitividad)
+&
+Ax Ey p(x,y)                                     ("existencia de sucesores")
+
+
+¿Por qué esta F sólo tiene modelos infinitos???
+Reducción al absurdo.
+Supongamos que existiera un modelo finito I, con:
+D_I = { e1 ... ek }
+Por la parte Ax Ey p(x,y), necesito que
+p_I(e1,e)=1 para algun elemento "e" de D_I. Llamemosle "e2" a este elemento e.
+
+También necesito
+p_I(e2,e)=1 para algun elemento "e" de D_I.  No puede ser e2, ni tampoco e1: tendriamos p_I(e1,e2) y p_I(e2,e1) y por transitividad tendriamos p_I(e1,e1) que contradice la irreflexividad. Luego el sucesor de e2 debe ser un elemento al que podemos llamar e3.
+
+También necesito
+p_I(e3,e)=1 para algun elemento "e" de D_I.  Por las mismas razones, no puede ser e3 ni e2, ni tampoco e1.  
+
+Una vez hemos entendido esto, (por inducción) podemos demostrar (no lo
+hacenos aqui) que no podemos introducir "ciclos" en la relacion p_I, del tipo:
+
+   p_I(e1,e2) & p_I(e2,e3) & ... & p_I(en,e1)
+
+Lo cual nos lleva a una contradicción, porque... ¿quién será el sucesor de e_k? Nadie!
+
+
+
+
+
+23. (dificultad 5) Demuestra que si una fórmula tiene algún modelo con n elementos en el dominio, también 
+tiene algún modelo con n+1 elementos,  e incluso con m elementos para cualquier m ≥ n, e incluso modelos infinitos.
+
+Esto es otra manera de decir que NO podemos expresar con una fórmula
+F, que los modelos de F tendrán como Máximo 2 elementos, o como máximo k elementos, para alguna k.
+
+
+Ejemplo de cómo "clonar" un elemento "a" de D_I: tengo p de aridad 2, y tengo la interpretacion I con:
+D_I = {a,b}
+
+p_I(a,a) = 1
+p_I(a,b) = 0
+p_I(b,a) = 1
+p_I(b,b) = 0
+
+Sea F cualquier formula tal que   I |= F.
+
+
+Clonar el elemento a, añadiendo su clon a'   obteniendo una I' de manera que I' |= F:
+
+D_I' = {a,b, a'}
+
+p_I'( a, a) = 1
+p_I'( a, b) = 0
+p_I'( a,a') =    1   <---  con a' p_I' se comporta igual que con a
+
+p_I'( b, a) = 1
+p_I'( b, b) = 0
+p_I'( b,a') =    1
+
+p_I'(a', a) =    1
+p_I'(a', b) =    0
+p_I'(a',a') =    1
+
+Si F es por ejemplo:   Ax Ey p(x,y) & p(y,x)
+
+
+
+
+
+Lógica de Primer Orden con Igualdad  (LPOI)
+===========================================
+
+
+En los ejercicios 21 y 22 vimos que en LPO podemos expresar que hay AL MENOS k elementos en el dominio.
+Pero en el ejercicio 23, vemos que en LPO NO podemos expresar que hay COMO MUCHO k elementos en el dominio.
+esto es lo que nos motiva a introducir una lógica más expresiva, la LPOI.
+
+-----------
+Expresividad de una lógica:  qué situaciones de la vida real podemos  describir  o  distinguir?
+
+Por ej, en LProp   P = { llueve, hace_sol, esta_nublado}
+cada I "modela" una sitacion de la vida real: por ej, NO llueve, No hace_sol y SÍ esta_nublado.
+Una F lo que hace es distinguir un subconjunto de las I's:  los MODELOS de F.
+
+En LPO lo mismo, pero las interpretaciones son mucho más complejas: qué dominio hay, cómo se interpretan los simbolos.
+Con una F podemos distinguir las I's que tienen al menos 2 elementos en su D_I.  O infinitos elementos.
+Pero NO podemos expresar que hay como máximo 2  (o k)  elementos (ejercicio 23).
+
+Esto nos motiva a introducir otra lógica que extiende la LPO, que es la LPOI, que sí permite expresar este tipo de cosas.
+-----------
+
+
+Qué es la LPOI?
+
+Sintaxis:   F:   es como LPO, pero hay un simbolo de predicado "predefinido" binario eq^2
+Semantica:  I:   es como LPO, pero eq_I siempre será "ser el mismo elemento del dominio"
+                                                      eq_I(e1,e1) = 1 para todo elemento e1 de D_I
+                                                      eq_I(e1,e2) = 0 si e1 y e2 son elementos distintos de D_I
+            I |= F  ( eval_I(F) )     como LPO.
+
+
+EJERCICIOS DE LPOI:
+
+24. (dificultad 2) Escribe una fórmula F de LPOI que exprese que para todo modelo I de F:
+a) hay como máximo 1 elemento en el dominio de I
+
+tres maneras alternativas de hacerlo:
+AxAy eq(x,y)        con la otra notacion:    AxAy x=y
+
+Ax eq(x,a)                                   Ax x=a
+
+ExAy eq(x,y)                                 ExAy x=y
+
+
+b) hay como máximo 2 elementos en el dominio de I
+
+tres maneras alternativas de hacerlo:
+AxAyAz ( eq(x,y) v eq(x,z) v eq(y,z) )
+
+Ax ( eq(x,a) v eq(x,b) )
+
+Ex Ey Az ( eq(x,z) v eq(y,z) )
+
+
+c) hay como máximo n elementos en el dominio de I, para una n dada
+
+tres maneras alternativas de hacerlo:
+
+Ax_1 .... Ax_n+1  (  V_{1 <= i<j <= n+1}   eq(x_i,x_j) )     (una formula de tamaño cuadrático)
+
+Ax ( eq(x,a_1) v...v eq(x,a_n) )                             (una formula de tamaño lineal)
+
+E x1 ... E xn  Ay ( eq(y,x_1) v...v eq(y,x_n)  )             (una formula de tamaño lineal)
+
+
+
+d) hay exactamente n elementos en el dominio de I, para una n dada
+
+(  Ax eq(x,a1) v...v eq(x,an) )                (máximo n)
+&
+(  &  1 <= i<j <= n   -eq(ai,aj)  )            (como mínimo n: una formula de tamaño cuadrático)  -eq(a1,a2) & -eq(a1,a3) & ... & -eq(a_n-1,an)
+
+
+
+
+26. (dificultad 2)
+a) Sea p un símbolo de predicado unario. Escribe una fórmula F de LPOI que exprese
+que hay un único elemento que cumple p. (en mates a veces se escribe  E! x  p(x) ).
+Esto quiere decir: que exprese
+que para todo modelo I de F hay un único elemento a en D_I con p_I(a) = 1.
+
+
+Ex (   p(x)  &  Ay ( -eq(x,y) --> -p(y) )    )
+
+Otra manera, con una constante a:
+
+       p(a)  &  Ax ( -eq(a,x) --> -p(x) )
+
+
+
+b) Escribe otra F expresando que hay exactamente 2.
+
+p(a) & p(b) & -eq(a,b) & Ax ( -eq(a,x) & -eq(b,x) --> -p(x) ) )
+
+
+
+27. (dificultad 2) Un *monoide* es un modelo de la siguiente fórmula:
+
+∀x∀y∀z  (x · y) · z   =  x · (y · z)         [. es asociativo]
+∧
+∀x x · e = x                                 [e es elemento neutro por la derecha]
+∧
+∀x e · x = x                                 [e es elemento neutro por la izquierda]
+
+Notacion:    eq(x,y)    x=y
+Notacion:    .(x,y)     x.y    simbolo de funcion binario.   En notacion prefija sería: .(.(x,y),z) = .(x,.(y,z))
+
+
+
+ejemplos de monoides: 
+D_I = los naturales N
+._I = +
+e_I = 0
+
+D_I = los enteros Z
+._I = +
+e_I = 0
+
+D_I = los racionales Q
+._I = +
+e_I = 0
+
+D_I = los reales R
+._I = +
+e_I = 0
+
+y todos estos con *,1
+Los strings con concatenacion y string vacío ( = "lambda")
+
+
+D_I = los conjuntos de naturales P(N)
+._I = interseccion
+e_I = N
+
+
+d)
+D_I = cadenas de 0s y 1s
+._I = concatenacion    (S1 @ S2) @ S3  = S1 @ (S2 @ S3)   donde @ es la concatenacion
+e_I = lambda (la cadena vacia)
+
+
+f) 
+D_I = {a,b}
+._I(a,a) = a
+._I(a,b) = b
+._I(b,a) = b
+._I(b,b) = a
+
+
+∀x∀y∀z (x · y) · z = x · (y · z)         [. es asociativo]
+habria que hacer los 8 casos:
+        a   a    a
+        a   a    b
+        a   b    a  <--- a modo de ejemplo, abajo comprobamos este caso:
+        a   b    b
+        b   a    a
+        b   a    b
+        b   b    a
+        b   b    b
+
+
+        a . b    a = a    b . a   
+        -----             -----
+          b   .  a   a  .   b
+        ----------   ----------
+             b          b
+
+
+e_I = a
+hay que comprobar los casos:
+   ._I( a , e_I ) = a
+   ._I( b , e_I ) = b
+
+   ._I( e_I , a ) = a
+   ._I( e_I , b ) = b
+
+
+
+ejercicio 28: 
+   un *grupo* es un monoide que además satisface:   ∀x∃y ( x · y = e  ∧  y · x = e )
+   y dice que "y es el inverso de x".
+   Otra manera de definir los grupos es haciendo explícita la operacion unaria inverso i:
+
+   ∀x ( x · i(x) = e  ∧  i(x) · x = e )
+
+  Ejemplos de grupos:
+
+D_I = los naturales N
+._I = +
+e_I = 0    NO es grupo, porque no hay inverso
+
+
+D_I = los enteros Z
+._I = +
+e_I = 0    
+i_I(n) = -n    SI es grupo
+
+D_I = los racionales Q
+._I = +
+e_I = 0
+i_I(n) = -n    SI es grupo
+
+D_I = los reales R
+._I = +
+e_I = 0
+i_I(n) = -n    SI es grupo
+
+
+y todos estos con *,1 ?
+
+D_I = los enteros Z
+._I = *
+e_I = 1      NO es grupo, porque no hay inverso
+
+D_I = los racionales Q
+._I = *
+e_I = 1
+i_I(n) = 1/n    SI es grupo si quitamos el cero del dominio: D_I = Q \ {0}
+
+D_I = los reales R
+._I = *
+e_I = 1
+i_I(n) = 1/n    SI es grupo si quitamos el cero del dominio: D_I = R \ {0}
+Todos estos de +,* son grupos conmutativos.
+
+
+ 
+D_I = los conjuntos de naturales P(N)
+._I = interseccion
+e_I = N
+NO es grupo. NO hay inverso  (<---- ATENCIÓN: ESTO CORRIGE UNA ERRATA QUE HABIA EN ESTA RESPUESTA)
+Para que fuese grupo, necesitariamos que para todo conjunto de naturales x hayo otro, i(x), tal que x interseccion i(x) = N.
+Y eso no existe.
+
+
+
+D_I = cadenas de 0s y 1s
+._I = concatenacion    (S1 @ S2) @ S3  = S1 @ (S2 @ S3)   donde @ es la concatenacion
+e_I = lambda (la cadena vacia)
+NO es grupo porque no hay inverso
+NO es grupo conmutativo
+
+
+D_I = {a,b}
+._I(a,a) = a
+._I(a,b) = b
+._I(b,a) = b
+._I(b,b) = a
+
+e_I = a
+
+i_I(a) = a    a . i_I(a) = i_I(a) . a = e_I = a    
+i_I(b) = b    b . i_I(b) = i_I(b) . b = e_I = a    
+
+SI es grupo con esta interpretacion del inverso
+SI es grupo conmutativo
+
+
+
+Otro posible ejemplo:
+D_I = N
+._I(n,m) = mcd(n,m)
+
+esto es asociativo, porque mcd(x,mcd(y,z)) = mcd(mcd(x,y),z).
+Pero no hay elemento neutro, luego no es monoide.
+
+
+
+
+
+Ejercicio 32. Para los conjuntos de símbolos y pares de
+interpretaciones siguientes, escribe una fórmula F de LPOI sobre el
+vocabulario (los símbolos) dado, tal que F es cierta en una de ellas y falsa
+en la otra.
+
+a) (dificultad 2)  cjto de símbolos de funcion: { f^2 }, 
+I1 tiene como dominio los naturales y f se interpreta como el producto
+I2 tiene como dominio P(N)          y f se interpreta como la intersección
+
+Si F es la fórmula   Ax f(x,x)=x   entonces   NO I1 |= F  pero     I2 |= F 
+Si F es la fórmula  -Ax f(x,x)=x   entonces      I1 |= F  pero  NO I2 |= F 
+
+
+b) (dificultad 2)  cjto de símbolos de funcion: { f^1 }, 
+I1 tiene dominio los naturales N
+I2 tiene dominio los enteros   Z
+En ambos casos el símbolo f se interpreta como la  función ‘siguiente’, es decir f_I(n) = n + 1.
+
+
+
+Si F es la fórmula   AxEy f(y)=x    entonces    NO I1 |= F  pero  I2 |= F 
+
+
+c) (dificultad 4)  { f^2 , g^2 }. 
+I1 tiene dominio los reales     R
+I2 tiene dominio los racionales Q
+en ambos casos f y g se interpretan como la suma y el producto respectivamente.
+Ayuda: fabrica el dos y expresa que raíz de dos existe.
+
+Ex Ay g(x,y)=y                            (esto expresa que x es el 1, y por eso f(x,x) será 2 )
+
+añadimos algo y tenemos:
+
+Si F es la fórmula   ExEz ( Ay g(x,y)=y  & g(z,z) = f(x,x) )  entonces   I1 |= F  pero  NO I2 |= F 
+
+
+
+
+Para el próximo dia: comienza a estudiar el capítulo 5: Deducción en LPO.
+
+
+
+
+
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+
+Teoría Clase 8.
+
+
+7. (dificultad 3) Sea F el conjunto { f^2 , c^0 } y sea P el conjunto { p^2 }. 
+Consideremos una interpretación I tal que D_I = N  y  p_I(n, m) = 1 si y sólo si n ≤ m. 
+Encuentra tres interpretaciones distintas para f y c que satisfagan la fórmula
+∀x ( p(f(x,c),x) ∧ p(x,f(x,c) )
+
+y que sólo dos de ellas satisfagan la fórmula
+∀x∀y ( p( f(x,y), f(y,x)) ∧ p( f(y,x), f(x,y)) )         esto implica que  f(x,y)=f(y,x), es decir, que f_I debe ser conmutativa
+
+
+         ∀x ( p(f(x,c),x) ∧ p(x,f(x,c) )
+
+         Ax   f(x,c) <= x   AND   x <= f(x,c)               esto implica que:   f(x,c)=x
+
+
+
+
+1a I:   f_I es la suma,     y c_I es 0
+2a I:   f_I es el producto, y c_I es 1
+3a I:   f_I(n,m) = n,       y c_I es  cualquier natural, por ejemplo el 7
+
+        ∀x ∀y ( p( f(x,y), f(y,x))  ∧   p( f(y,x), f(x,y)) )
+
+                f(x,y) <= f(y,x)  AND   f(y,x) <= f(x,y)        Nota que esto implica  f(y,x) = f(x,y),  ya que n<=m y m<=n --> n=m
+                                                                           es decir, f_I es conmutativa
+En la 1a I, f_I sí es conmutativa
+En la 2a I, f_I sí es conmutativa
+En la 3a I, f_I NO es conmutativa. ok.
+
+otra opción con f_I no conmutativa: f_I(n,m) = n^m  y   c_I = 1.
+
+
+
+8. (dificultad 2) Sea F la fórmula ∀x∃y p(x,y) ∧ ∀x∃y ¬p(x,y). ¿F es satisfactible? Demuéstralo.
+
+Sea I la interpretación tal que:
+D_I = Z  (los enteros)
+p_I(n,m) = n<m.
+esta I es un modelo.
+
+
+Otro modelo:
+D_I = {a,b}
+p_I(a,a) = 1
+p_I(a,b) = 0
+p_I(b,a) = 0
+p_I(b,b) = 1
+
+
+Si I es una interpretación, decimos que el número de elementos de I es | D_I |, el número de elementos de D_I. 
+Asimismo, decimos que I es un modelo finito cuando D_I es finito, 
+y hablamos de la cardinalidad de I para referirnos a la cardinalidad de D_I.
+¿Cual es el mínimo número de elementos que debe tener un modelo de F?
+
+D_I = {a}
+tanto si definimos   p_I(a,a) = 1   como si definimos   p_I(a,a) = 0, la fórmula no se cumple!
+Luego no es posible con 1 solo elemento en el dominio, pero sí con 2.
+
+
+
+9. (dificultad 3) Considera los conjuntos de símbolos y pares de interpretaciones I_1 e I_2 siguientes. 
+Para cada caso, da una fórmula F que es cierta en una de ellas y falsa en la otra, y razona informalmente por qué es así.
+
+a) P = { r^2 }, 
+   I_1 tiene como dominio los naturales y el predicado se interpreta como el orden (es decir r_I(n, m) = 1 si y sólo si n ≤ m); 
+   I_2 tiene como dominio los enteros   y el predicado también se interpreta también como el orden;
+
+   D_I1 = N   r_I1(n,m) = (n<=m)
+   D_I2 = Z   r_I2(n,m) = (n<=m)    
+para todo entero existe otro menor estricto               Ax Ey -r(x,y)                    no (x<=y)  =   x>y
+pero:
+para todo natural NO existe otro menor estricto (porque es falso para el cero)
+
+
+Sea F la fórmula  ∀x∃y ¬r(x,y).
+Tenemos que I1 no es modelo de F y I2 sí es modelo de F.
+I1 no es modelo porque si x es 0, entonces no existe ninguna y tal que   no( x <= y ), es decir, tal que x>y.
+En cambio, en I2, los enteros, para toda x sí existe una y tal que x>y.
+
+
+
+
+b) P = {r^2 }, 
+   I_1 tiene como dominio los enteros    y el predicado se interpreta como el orden; 
+   I_2 tiene como dominio los racionales y el predicado se interpreta también como el orden.
+
+   D_I1 = Z   r_I1(n,m) = (n<=m)
+   D_I2 = Q   r_I2(n,m) = (n<=m)       
+
+para todo par de elementos x e y tales que x > y, existe un z tal que x > z   &   z > y  (se dice que los racionales son "densos")
+
+Si F es la fórmula:    Ax Ay (  ¬r(x,y)  --> Ez ( ¬r(x,z) & ¬r(z,y) ) )
+                                   x>y               x>z       z>y 
+entonces I2 |= F,   pero   NO  I1 |= F.   I2 es modelo de F pero I1 no lo es.
+
+
+
+
+
+c) P = {r^2 }. El dominio tanto de I_1 como de I_2 son los números enteros, para
+I_1 el predicado r se interpreta como ‘tener el mismo resto módulo 2’ y para
+I_2 el predicado r se interpreta como ‘tener el mismo resto módulo 3’.
+
+D_I1 = Z   r_I1(n,m) = ( n mod 2  =  m mod 2 )     "tener la misma paridad"
+D_I2 = Z   r_I2(n,m) = ( n mod 3  =  m mod 3 )     "tener la misma "triaridad"???"
+
+F expresa que hay tres elementos con distinta paridad:
+
+Si F es la fórmula:    Ex Ey Ez (  ¬r(x,y) & ¬r(x,z) & ¬r(y,z)  )
+
+entonces I2 |= F,   pero   NO  I1 |= F.   I2 es modelo de F pero I1 no lo es.
+
+
+
+
+10. (dificultad 2) Supón que en P sólo hay símbolos de predicado de aridad cero.
+Entonces, la sintaxis de las fórmulas, ¿en qué se diferencia de la de la lógica proposicional? 
+¿Y la semántica?
+
+
+Si sólo hay símbolos de predicado de aridad cero (p,q,r...)  ¿que fórmulas hay?
+
+Sintaxis:
+Los átomos serán p, q, r.... sin términos, y, por lo tanto, sin variables, y, por lo tanto, las fórmulas serán 
+sin cuantificadores.
+Las fórmulas serán combinacion de p,q,r,... con conectivas &,v,-.
+SON las fórmulas de la lógica proposicional.
+
+Semántica:
+Aunque hubiera símbolos de función, éstos no saldrán en las fórmulas, por lo que su interpretación es irrelevante.
+De la misma manera, D_I también es irrelevante, porque no hay variables ni cuantificadores en las fórmulas.
+Queda definir en I cómo se interpretan los símbolos de predicado (que son todos de aridad cero):
+p_I:  --> {0,1}
+q_I:  --> {0,1}
+r_I:  --> {0,1}
+etc.
+¿En qué se diferencia esto de una I en lógica proposicional, que era: I: P --> {0,1}  ?
+En Nada.
+
+Conclusión: la L Prop es un caso (muy,muy) particular de la LPO.
+
+
+
+16. (dificultad 2) Demuestra alguna de las siguientes equivalencias:
+¬∀xF       ≡  ∃x¬F	  
+¬∃xF	   ≡  ∀x¬F	  
+∀x∀yF	   ≡  ∀y∀xF	  
+∃x∃yF	   ≡  ∃y∃xF
+	  
+∀xF ∧ ∀xG  ≡  ∀x(F ∧ G) 
+∃xF ∨ ∃xG  ≡  ∃x(F ∨ G) 
+
+∀xF → ∃xG  ≡  ∃x(F → G) 
+
+∀xF ∨ G	   ≡  ∀x(F ∨ G),  si x no es libre en G
+∀xF ∧ G	   ≡  ∀x(F ∧ G),  si x no es libre en G
+∃xF ∨ G	   ≡  ∃x(F ∨ G),  si x no es libre en G
+∃xF ∧ G	   ≡  ∃x(F ∧ G),  si x no es libre en G
+
+
+
+
+17. (dificultad 2) Demuestra que las equivalencias siguientes NO son ciertas en 
+general (es decir, para cualquier par de fórmulas F, G):
+
+
+17a)   ∀xF ∨ ∀xG   no≡   ∀x(F ∨ G)            
+Sea F la fórmula  p(x)
+Sea G la fórmula -p(x).
+Sea I la interpretación donde:
+   D_I = {a,b}
+   p_I(a) = 0 
+   p_I(b) = 1
+
+
+  D_I=N (los naturales)
+  p_I(n)= ( n es par )     (n mod 2 = 0)
+Entonces tenemos que I es modelo de ∀x(F ∨ G), pero no es modelo de ∀xF ∨ ∀xG.
+Nota: de hecho Ax ( p(x) v -p(x) ) es una tautología.
+
+
+17b)     ∃xF ∧ ∃xG    no≡    ∃x(F ∧ G)
+Las mismas F,G y la misma interpretacion I nos sirven:
+I es modelo de ∃xF ∧ ∃xG, pero no es modelo de ∃x(F ∧ G).
+Nota: de hecho Ex ( p(x) ∧ -p(x) ) es insatisfactible.
+
+
+
+En ambos casos, para cualquier F y G, hay alguna de la dos fórmulas que sea consecuencia lógica de la otra? 
+(no hace falta que demuestres esto último, ya lo haremos cuando tengamos un cálculo deductivo).
+
+a) Sí, para cualesquiera F y G tenemos    ∀xF ∨ ∀xG   |=   ∀x(F ∨ G).  (intuitivamente)
+
+           en cualquier I, si tienes I  |=  ∀xF ∨ ∀xG   esto es porque  
+           I  |=  ∀xF      o   I |=  ∀xG     y entonces, 
+           I  |=  ∀x(F ∨ G).  ("demotración" NO formal!)
+
+
+b) Sí, para cualesquiera F y G tenemos    ∃x(F ∧ G)   |=   ∃xF ∧ ∃xG.  (intuitivamente)
+
+
+
+
+18. (dificultad 2) Demuestra que las fórmulas    ∀x∃y F   y    ∃y∀x F    no son lógicamente equivalentes en general. 
+¿Hay alguna de la dos fórmulas que sea consecuencia lógica de la otra? 
+(no hace falta que demuestres esto último, ya lo haremos cuando tengamos un cálculo deductivo).
+
+
+Sea F la fórmula  p(x,y)      tenemos    ∀x∃y p(x,y)   y    ∃y∀x p(x,y)
+Sea I la interpretación donde:
+  D_I=N (los naturales)
+  p_I(n,m) = (n=m)
+
+
+Otra I:
+  D_I= {a,b}
+  p_I(a,a) = 1
+  p_I(a,b) = 0
+  p_I(b,a) = 0
+  p_I(b,b) = 1
+
+
+Otra I:
+  D_I= {a,b}
+  p_I(a,a) = 0
+  p_I(a,b) = 1
+  p_I(b,a) = 1
+  p_I(b,b) = 0
+
+Tenemos   I |= Ax Ey p(x,y)   pero I no es modelo de Ey Ax p(x,y).
+
+
+Sí tenemos   Ey Ax p(x,y)   |=   Ax Ey p(x,y)  (intuitivamente; ya lo demostraremos por resolución).
+
+(al revés no, como ya hemos demostrado con los contraejemplos).
+
+
+
+
+Para el próximo día de clase, ejercicios 21,22,23.
+
+
+
+
+
+
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+
+Teoría Clase 7.
+
+
+Definición de la Lógica de Primer Orden (LPO)
+
+Apuntes: p4.pdf
+
+
+Recordemos:
+           ¿Qué es una lógica?
+                  -sintaxis:      - ¿qué es una fórmula F?
+                       +
+                  -semántica:    a- ¿qué es una interpretación I?    
+                                 b- ¿Cúando una I SATISFACE una F?   I |= F?  
+
+           
+            Intuitivamente:
+                    "Interpretación" === "situación de la vida real a modelar"
+                    Una F "representa" aquellas I donde se satisface, se cumple.
+
+
+    Usamos I para denotar interpretaciones y F,G para fórmulas.
+
+    En cualquier lógica:
+      I *es modelo* de F                    si I satisface a F   (se denota  I |= F )
+      F es *satisfactible*                  si F tiene algún modelo
+      F es *insatisfactible*                si F no tiene modelos
+      F es *tautología*                     si toda I es modelo de F
+      G es *consecuencia lógica* de F       si todo modelo de F satisface G  (se denota F |= G)
+      F y G son *lógicamente equivalentes*  si F y G tienen lo mismos modelos   (se denota F ≡ G)
+
+
+
+Nota:  Por definición tenemos que    F ≡ G   ssi   F |= G  y  G |= F.
+
+
+
+LPO: mucho más poder expresivo que la LProp: podemos modelar muchas más cosas de la vida real:
+           matemáticas, verificación de software, protocolos, ...
+LPO: deducción más costosa (en complejidad, decidibilidad) que la LProp
+
+
+Ver p4.pdf:
+
+LPO: Sintaxis:
+
+símbolos de variable:   X \                            notación:  x,y,z, posiblemente con superíndices o subíndices
+                           > términos  
+símbolos de función :   F /          \
+                                       > átomos
+símbolos de predicado:  P -----------/
+
+Fórmulas: átomos combinados con conectivas & v -  y con cuantificadores A E   
+          (ojo a la notacion "texto" que uso aquí:   "para todo" es A, "existe" es E, etc.)
+
+
+LPO: Semańtica:
+  Una I consta de tres partes:
+    D_I: "el dominio de I"   (un conjunto no vacío) 
+                                                                            n args
+                                                                        /-----^-----\
+    f_I: por cada símbolo de funcion   f de aridad n, una función  f_I: D_I x...x D_I --> D_I     "la interpretacion de f en I"
+    p_I: por cada símbolo de predicado p de aridad n, una función  p_I: D_I x...x D_I --> {0,1}   "la interpretacion de p en I"
+
+
+Intuitivamente, es como si hubiera dos TIPOS: los Booleanos y "los demás" (los elementos de D_I).
+F: toman argumentos de D_I y devuelven D_I.
+P: toman argumentos de D_I y devuelven un Booleano. POR ESO NO TIENE SENTIDO ANIDAR SÍMBOLOS DE PREDICADO.
+
+
+
+  Noción de evaluación de una F en una I:  Ver p4.pdf
+
+
+Ejemplo:
+
+F es: 
+   f de aridad 2
+   g de aridad 1
+   h de aridad 1
+   a de aridad 0
+   b de aridad 0
+
+P es 
+   p de aridad 2
+   q de aridad 1
+   r de aridad 0
+
+Ejemplos de términos:  a   b    g(a)   f(x,a)   f( f(a,b,), x)   f(g(a),g(g(f(a,x)))) ....
+de hecho, si sólo tengo un símbolo unario ya puedo fabricar infinitos términos:
+                       x    h(x)   h(h(x))   h(h(h(x)))...
+
+Ejemplos de átomos:  r  q(a)  q(f(a,b))  q(h(h(x)))  p(a,h(x)) ...
+
+
+Ejemplo de fórmula F:    Ax Ey ( p(x,h(y)) v q(f(x,y)) )
+
+
+Ejemplo de I:
+  D_I = { o, $ }
+  f_I: D_I x D_I --> D_I
+       defino esta función dando todos los casos:
+        f_I($,$) = $ 
+        f_I($,o) = o
+        f_I(o,$) = $
+        f_I(o,o) = $
+
+  g_I: D_I --> D_I
+        g_I($) = o 
+        g_I(o) = $
+
+  h_I: D_I --> D_I
+        h_I($) = $ 
+        h_I(o) = o
+
+  a_I = o
+
+  b_I = $
+
+  p_I: D_I x D_I --> {0,1}
+       defino esta función dando todos los casos:
+        p_I($,$) = 1
+        p_I($,o) = 0
+        p_I(o,$) = 0
+        p_I(o,o) = 1
+
+  q_I: D_I --> {0,1}
+       defino esta función dando todos los casos:
+        q_I($) = 1
+        q_I(o) = 0
+
+  r_I = 1
+
+
+Tenemos I |= F?
+
+    Ax Ey ( p(x,h(y)) v q(f(x,y)) )
+
+        p_I($,$) = 1
+        p_I($,o) = 0
+        p_I(o,$) = 0
+        p_I(o,o) = 1
+
+        h_I($) = $ 
+        h_I(o) = o
+
+    como p se interpreta como igualdad, y la h es la funcion identidad (que "no hace nada"), 
+    tenemos que Ax Ey p(x,h(y)) se cumple: para toda x del dominio hay una y que es igual:
+      si x=$ escogemos que la y sea también $
+      si x=o escogemos que la y sea también o
+    no hace ni falta mirar la parte q(f(x,y)).
+    Tenemos que I |= F.
+
+==============================================================
+
+
+Otro ejemplo de interpretación:
+   D_I = N (los números naturales)
+
+   f_I de aridad 2   la suma de naturales:  f_I(n,m) = n+m
+   g_I de aridad 1   la funcion "sucesor":  g_I(n)   = n+1
+   h_I de aridad 1   la funcion "doble":    h_I(n)   = 2n
+   a_I de aridad 0   7
+   b_I de aridad 0   23
+
+   p_I de aridad 2   el orden estricto de naturales:  p_I(n,m) = ( n>m )
+   q_I de aridad 1   nos dice si es par:              q_I(n)   = (n mod 2 = 0)
+   r_I de aridad 0   0
+
+Ahora tenemos I |= F?
+
+    Ax Ey ( p(x,h(y)) v q(f(x,y)) )
+
+    para toda x existe una y tal que    x > 2y   ó   x+y es par
+    esto es cierto, porque para toda x podemos escoger la y que sea la misma x y entonces x+y = x+x que es par.
+    (no necesitamos la primera mitad del or)
+---------------------------------------------
+
+
+
+
+5. (dificultad 1) Sea F la fórmula ∃x∃y∃z (p(x, y) ∧ p(z, y) ∧ p(x, z) ∧ ¬p(z, x)).
+Cuáles de las siguientes interpretaciones son modelos de F?
+a) D_I = N  y  p_I(m, n) = 1 si y sólo si m ≤ n.
+b) D_I = N  y  p_I(m, n) = 1 si y sólo si n = m + 1.
+c) D_I = P(N) (esto denota partes de N, es decir, el conjunto de todos los
+               subconjuntos de N), y p_I(A, B) = 1 si y sólo si A ⊆ B.
+
+
+a) ∃x∃y∃z ( p(x, y) ∧ p(z, y) ∧ p(x, z) ∧ ¬p(z, x) ) se evalúa como
+             x <= y    z <= y    x <= z     z>x
+             1    3    2    3    1    2     2 1
+  Sí, I |= F.
+
+
+b) ∃x∃y∃z ( p(x, y) ∧ p(z, y) ∧ p(x, z) ∧ ¬p(z, x) ) se evalúa como
+             y=x+1     y=z+1      z=x+1    x != z+1
+             ---------------
+                    x=z           z=x+1
+                    --------------------
+                            NO
+
+  NO, I no es modelo de F.
+
+c) ∃x∃y∃z ( p(x, y) ∧ p(z, y) ∧ p(x, z) ∧ ¬p(z, x) ) se evalúa como
+             x ⊆ y     z ⊆ y      x ⊆ z    no(z ⊆ x)
+            {1} {1,2,3}  {1,2} {1,2,3}    {1}  {1,2}
+  Sí, I |= F.
+ 
+
+6. (dificultad 2) Expresa con tres fórmulas las propiedades de reflexividad, simetría
+y transitividad de un predicado binario p y demuestra que ninguna de las tres
+fórmulas es consecuencia lógica de (la conjunción de) las otras dos.
+
+
+Una interpretacion p_I de una predicado binario p, es una funcion p_I: D_I x D_I --> {0,1}.
+Nos damos cuenta de que en realidad es p_I es lo mismo que una relacion binaria sobre D_I:
+   p_I nos dice qué parejas de elementos de D_I dan 1 (están en la relación).
+
+Recordemos:
+   p es *reflexivo*  si p(e,e)                                  para todo e        de S.  FR:  Ax     p(x,x)
+   p es *simétrico*  si p(e,e')              implica  p(e',e)   para todo e,e'     de S.  FS:  AxAy   (p(x,y) -> p(y,x))
+   p es *transitivo* si p(e,e') y  p(e',e'') implica  p(e,e'')  para todo e,e',e'' de S.  FT:  AxAyAz ( p(x,y)&p(y,z) -> p(x,z) )
+
+
+
+1er caso:  FR no es consecuencia lógica de  FS & FT.
+ Sea I la interpretacion I donde   D_I = {*}   y    p_I(*,*) = 0.
+ Entonces tenemos que I no es modelo de FR.
+ Pero I sí es modelo de   FS: AxAy   (p(x,y) -> p(y,x))   ===    AxAy   ( -p(x,y) v p(y,x) )
+ y I también es modelo de FT: AxAyAz ( p(x,y)&p(y,z) -> p(x,z) )   ===    AxAyAz ( -p(x,y) v -p(y,z) v p(x,z) )
+ Por lo tanto tenemos que FR no es consecuencia lógica de  FS & FT.
+
+2o caso:  FS no es consecuencia lógica de  FR & FT.
+ Sea I la interpretacion I donde   D_I = {a,b}
+
+        p_I(a,a) = 1  (por reflexividad)
+        p_I(a,b) = 1   para incumplir la simetria, junto con la linea siguiente
+        p_I(b,a) = 0   para incumplir la simetria, junto con la linea anterior
+        p_I(b,b) = 1  (por reflexividad).
+ Tenemos que I no es modelo de FS, pero sí de FR y de FT.
+ Por lo tanto tenemos que FS no es consecuencia lógica de  FR & FT.
+
+3er caso:  FT no es consecuencia lógica de  FR & FS.
+ Sea I la interpretacion I donde   D_I = {a,b,c}
+
+Imponemos, por este orden:
+     FR: por reflexividad    
+    -FT: para incumplir la transitividad
+     FS: por simetría
+
+
+                  FR  -FT  FS
+
+        p_I(a,a) = 1
+        p_I(a,b) =     1
+        p_I(a,c) =     0
+        p_I(b,a) =          1
+        p_I(b,b) = 1
+        p_I(b,c) =     1
+        p_I(c,a) =          0
+        p_I(c,b) =          1
+        p_I(c,c) = 1
+
+ Tenemos que I no es modelo de FT, pero sí de FR y de FS.
+ Por lo tanto tenemos que FT no es consecuencia lógica de  FR & FS.
+
+
+Para el próximo día: ejercicios de cap p4.pdf: 7,8,9,10,11,12,16,21 en adelante.
+
+
+
+======================================================================= 
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+
+Teoría Clase 6.
+
+Necesitamos decidir SAT para fórmulas cualesquiera, pero los SAT solvers sólo trabajan
+con CNFs (conjuntos de cláusulas).
+Por lo tanto necesitamos poder transformar fórmulas cualesquiera en CNFs.
+
+
+Tseitin. Ver la presentación (en la web de LI https://www.cs.upc.edu/~roberto/li.html )
+         sobre la transformación de Tseitin de una fórmula cualquiera a una CNF equisatisfactible.
+
+Por qué la transformación via distributividad puede hacer crecer exponencialmente la fórmula?
+
+Porque la regla de distributividad   F v (G & H) ==> FvG & FvH   DUPLICA la subfórmula F.
+
+Ejemplo de caso peor: si F es una DNF Cubo_1 v...v Cubo_n, donde cada cubo es un AND de k literales,
+la CNF tendrá TODAS las cláusulas posibles con un literal de cada cubo, es decir k^n cláusulas.
+(el literal del primer cubo se puede escoger de k maneras, el del segundo también, etc.).
+
+Ejemplo:  (p & q & r)    v    (p' & q' & r')  daría:
+    p v p1,   p v q',   p v r',
+    q v p1,   q v q',   r v r',
+    r v p1,   r v q',   r v r'
+
+
+ 
+Por eso hacemos TSEITIN:
+Introducimos un símbolo nuevo por cada conectiva de la fórmula.
+Y generamos las cláusulas que "definen" el papel que juegan esos símbolos nuevos en la fórmula.
+
+
+Por ejemplo, para expresar que p es el símbolo de un nodo OR de dos hijos con símbolos a, b, necesitamos p  <-->  a v b.
+Para eso: 
+   -expresamos  p  -->  a v b     mediante una cláusula de tres literales:               -p v a v b
+   -expresamos  p  <--  a v b     que es a --> p   y   b --> p, con dos cláusulas:       -a v p   
+                                                                                         -b v p     
+
+Para expresar que p es el símbolo de un nodo AND de dos hijos con símbolos a, b, necesitamos p  <-->  a & b.
+Para eso: 
+   -expresamos  p  -->  a & b     que es p --> a   y   p --> b, con dos cláusulas:       -p v a   
+                                                                                         -p v b
+   -expresamos  p  <--  a & b     mediante una cláusula de tres literales:               -a v -b v p.
+
+
+En la presentación de la web de LI se introducen también símbolos y cláusulas para los nodos NOT, pero eso no es necesario.
+Por ejemplo, para evitar el primer nodo NOT y su símbolo e3, podemos expresar directamente que e1 <--> e2 v -e4, generando
+las cláusulas:   -e1 v e2 v -e4
+                 -e2  v e1,
+                  e4  v e1.
+
+
+ATENCIÓN: ERRATA Hay un error en la presentación de la web de LI sobre Tseitin: donde dice e6 ↔ q ∨ ¬e7, debe decir e6 ↔ q ∨ e7.
+
+
+¿Qué resultados obtenemos?
+    Sea F una fórmula. 
+    Sea Tseitin(F) la CNF de (el conjunto de las cláusulas generadas por) la transformación de Tseitin de F.
+Entonces:
+  1.  Tseitin(F) tiene cláusulas de hasta 3 literales.
+      Ojo: hay una cláusula unitaria (de 1 solo literal) que es el símbolo auxiliar de la raíz (e1 en el ejemplo).
+  2.  F y Tseitin(F) son EQUISATISFACTIBLES:  F es satisfactible SSI Tseitin(F) es satisfactible
+  3.  F y Tseitin(F) NO son logicamente equivalentes
+  4.  El tamaño de Tseitin(F) es lineal en el tamaño de F  (3 cláusulas por cada conectiva AND o OR de F) + la raiz
+  5.  Podemos obtener Tseitin(F) en tiempo lineal a partir de F
+  6.  Podemos reconstruir fácilmente un modelo de F a partir de un modelo de Tseitin(F)   ("olvidándonos" de los símbolos 
+                                                                                            auxiliares)
+
+
+Nota: Sabiendo que SAT para fórmulas F cualesquiera es NP-completo, los puntos 1,2,5 implican que 3SAT tanbién es NP-completo.
+
+
+Nota: si tenemos una subfórmula con ORs (o ANDs) anidados, como  p v (q v r) podemos hacer Tseitin
+como siempre, introduciendo por cada OR binario un símbolo auxiliar y tres cláusulas. 
+Pero tambien podemos considerar que es una OR de tres entradas  p v q v r, y generar 
+un solo símbolo auxiliar y cuatro cláusulas para expresar   a <-> p v q v r :
+   -a v p v q v r
+   -p v a
+   -q v a
+   -r v a
+Esto puede hacerse similarmente para ORs y ANDs de cualquier número de entradas.
+
+
+
+
+Ahora: ver los vídeos de la web de LI sobre:
+    -the Transportation Company
+    -Codificación de restricciones numéricas en SAT
+          -ALO, AMO, exactly one
+          -cardinality constraints en general:   
+                    l1 +...+ ln <= K    
+                    l1 +...+ ln >= K    
+                    l1 +...+ ln  = K    
+          -pseudo-Boolean constraints:
+                    a1 l1 +...+ an ln  <= K    
+                    a1 l1 +...+ an ln  >= K    
+                    a1 l1 +...+ an ln   = K    
+
+
+
+
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+
+
+Teoría Clase 5.
+
+18. (dificultad 2) ¿La resolución es completa? Demuéstralo.
+
+Completa: cualquier consecuencia lógica se puede llegar a obtener mediante resolucion.
+
+No. Contraejemplo: Sea S el conjunto vacio de cláusulas.
+Entonces S |= p v -p.  (porque p v -p es una tautología).
+Pero NO podemos obtener p v -p a partir de S mediante resolución.
+Luego NO podemos obtener cualquier consecuencia lógica mediante resolución.
+Luego la resolución NO es completa.
+
+Otro contrajemplo:
+Sea S cualquier conjunto de cláusulas que contiene la cláusula vacía.
+Entonces S es insatisfactible. 
+Y por lo tanto tenemos S |= p,   donde p es un símbolo que no aparece en S.
+Pero NO podemos obtener p a partir de S mediante resolución.
+
+Otro contrajemplo:
+p |=  pvq  pero no podemos obtener pvq por resolucion a partir del conjunto de cláusulas { p }.
+ 
+
+
+19. (dificultad 2) Sea S un conjunto de cláusulas insatisfactible. Por la completitud refutacional de la
+resolución, sabemos que existe una demostración por resolución de que [] ∈ Res(S). ¿Es esta demostración única?
+
+
+Hay un teorema que dice:   S es insatisfactible    SSI   [] está en Res(S) 
+
+                                                   ==>          "completitud refutacional" (es un caso particular de completitud)
+                                                   <==          pq [] está en Res(S) ==> Res(S) insat ==> S insat
+                                                                (la última ==> viene del ejercicio 17:  
+                                                                    Res(S) es lógicamente equivalente a S )
+
+Volviendo al ejercicio:
+NO es única. Contraejemplo. Sea S el conjunto con las 4 cláusulas:
+  p v  q 
+  p v -q
+ -p v  q
+ -p v -q.
+
+Podemos obtener [] de más de una manera:
+Por ejemplo así:
+                        p v  q      p v -q                 -p v  q     -p v -q
+                        ------------------                 -------------------
+                                 p                                  -p
+                                 -------------------------------------
+                                                   []
+
+Pero también así:           
+                        p v  q     -p v  q                  p v -q     -p v -q
+                        ------------------                 -------------------
+                                 q                                  -q
+                                 -------------------------------------
+                                                   []
+
+
+
+
+21. (dificultad 2) Demuestra que el lenguaje de las cláusulas de Horn es cerrado bajo resolución, es decir,
+a partir de cláusulas de Horn, por resolución sólo se obtienen cláusulas de Horn.
+
+
+Una cláusula de Horn es una cláusula que tiene como máximo 1 literal positivo.
+Si tengo:  p v C   y    -p v D, y son de Horn, entonces hay 0 literales positivos en C, y máximo 1 en D.
+Por lo tanto, en C v D también hay como máximo 1 literal positivo, es decir, C v D también es de Horn.
+
+
+
+25. (dificultad 2) ¿Cuál es la complejidad de Horn-SAT, es decir, del
+    problema de determinar si un conjunto de cláusulas de Horn S es satisfactible?
+    Ayuda: piensa si la positive unit propagation decide Horn SAT, y analiza la complejidad de esto.
+
+unit propagation:   en mi algoritmo de SAT mediante backtracking (ver labo 1)
+                    si tengo una cláusula de la forma   l v C   
+                    y una interpretación (parcial, que estoy construyendo) donde la parte C es falsa, entonces
+                    el literal l debe ser cierto.
+
+positive unit propagation:  es lo mismo, pero sólo con l positivos.
+
+Las cláusulas de un conjunto S de cláusulas de Horn (sin la []), pueden ser de la forma:
+ a) p                   (positive unit clause)
+ b) p v -q1 v...v -qn   (1 positivo  y  n negativos, n>0)
+ c)     -q1 v...v -qn   (0 positivos y  n negativos, n>0)
+
+Un modelo de S DEBE satisfacer todas las cláusulas de tipo a) (las positive units).
+Si las propago, con las cláusulas de tipo b), obtengo nuevas positive units, que a su vez pueden propagarse, etc.etc.
+Por ejemplo, S puede ser:
+
+ p                    (tipo a)
+ q                    (tipo a)
+
+ r  v -p v -q         (tipo b)       --> propago r
+ r' v -p v -q v -r    (tipo b)                       --> propago r'
+
+ -r v -r'             (tipo c)                                       --> conflicto!!!
+
+Está claro que si me sale un conflicto, es insatisfactible.
+¿Y si no me sale un conflicto?  Entonces es satisfactible: ¡hay un modelo!
+¿Cuál es ese modelo?
+Es la I tal que I(p)=1  para todas las positive units p que he ido obteniendo (las iniciales y las otras)
+              y I(p)=0  para todos los demás símbolos p.
+¿Por qué esto es un modelo?
+Es modelo de las cláusulas de tipo:
+    las a)  ok
+    las b)  que    han propagado algo:   ok
+    las b)  que no han propagado nada:   ok, porque tendrá un literal -q donde la q no está entre las positive units: I(q)=0.
+    las c)  (que no han dado conflicto): ok, porque tendrá un literal -q donde la q no está entre las positive units: I(q)=0.
+
+Total: S es insat  SSI  la positive unit propagation da conflicto.
+
+Esto es lineal, si uso occur lists (ver labo 1) y un contador por
+cláusula que cuenta el número de literales negativos que le
+quedan. Cuando el contador se pone a cero --> esta cláusula propaga).
+
+NOTA: este algoritmo sólo pone a cierto aquellos símbolos p que DEBEN ser ciertos en CUALQUIER modelo de S.
+      Es decir, lo que se calcula es el modelo MINIMAL de S (aquel modelo que tiene el mínimo número de símbolos a 1).
+
+Otro ejemplo:
+
+ p
+ q
+
+ r   v -p v -q     
+ r'  v -p v -q v -r
+ r'' v -p v -q v -r'''
+
+
+
+Aqui, ¿el modelo minimal cuál es?  I(p)=I(q)=I(r)=I(r')=1     I(r'')=I(r''')=0.
+Pero hay más modelos: 
+   -I(p)=I(q)=I(r)=I(r')=I(r'')=1     I(r''')=0.
+   -el modelo donde I(p)=I(q)=I(r)=I(r')=I(r'')=I(r''')=1.  (todos).
+
+
+Vemos que si S es de Horn y es satisfactible, entonces S tiene un modelo minimal único.
+¿Es cierto esto también si S no es de Horn?
+NO! Por ejemplo, S = { p v q }, entonces dos modelos minimales: 
+      A)   I(p)=1     I(q)=0.
+      B)   I(p)=0     I(q)=1.
+
+
+
+
+
+26. (dificultad 2) Las cláusulas de Krom son aquellas que tienen como máximo dos literales. 
+¿Cuántas cláusulas de Krom se pueden construir con n símbolos de predicado? Demuestra que basta un número
+cuadrático de pasos de resolución para decidir 2-SAT, es decir, si un conjunto de cláusulas de Krom es satisfactible o no.
+
+Hay 2n literales. Cada cláusula de Krom es un subconjunto de como máximo 2 literales de estos 2n. 
+Hay (2n sobre 2) cláusulas de Krom de dos literales + 
+              2n cláusulas de Krom de 1 literal + 
+              1  cláusula  de Krom de 0 literales.
+(2n sobre 2) = 2n . (2n-1) / 2 = 4n² +.... = O(n²). Un número cuadrático.
+
+Cada paso de resolución me dará otra cláusula de Krom: "el lenguaje de las cláusulas de Krom está cerrado bajo resolución".
+    p v C    -p v D
+    ---------------
+         C v D 
+la parte C tiene como máximo 1 literal y la parte D también, y por lo tanto CvD tiene máximo dos.
+
+Por eso, la resolución termina tras un número cuadrático de pasos.
+Si lo implementamos bien, esto nos da un algoritmo cuadrático para 2-SAT.
+Ya tenemos dos problemas concretos (subcasos del problema de SAT general) que son polinómicos: Horn-SAT y 2-SAT!
+
+
+
+
+27. Algoritmo para 2-SAT basado en detección de ciclos en un grafo. Sea S un conjunto de cláusulas de Krom.
+Cada cláusula de Krom  l v l', en realidad representa dos implicaciones:
+         -l  --> l'
+         -l' --> l
+Puedo montar un grafo G a partir de S, con todas estas aristas: cada cláusula de S me da dos aristas en G.
+Si en G tengo un camino  p --> .... --> -p, entonces   S |= -p.   Lo puedo demostrar por corrección de la resolución:
+
+Si tengo:
+
+p --> l --> l' -> l'' -> ... -> -p
+
+Por resolucion:
+
+-p v l   -l v l'
+----------------
+     -p v l'   -l' v l''
+     -------------------
+            -p v l''
+                . 
+                 . 
+                  . 
+                -------------
+                   -p v -p       que es -p
+
+
+Similarmente, si en G tengo un camino  -p --> .... --> p, entonces   S |= p.
+Y si tengo los dos caminos, es que hay un ciclo en G que contiene a un símbolo p y su negado -p,... y entonces S es insatisfactible.
+Y al revés, si S es insatisfactible, entonces hay un ciclo en G que contiene a un literal y su negado.
+
+Total: S es insatisfactible   SSI   hay un ciclo en G que contiene a un literal y su negado.
+¿Cuál es el coste de este algoritmo para 2-SAT?
+Montar el grafo es lineal.
+Después detectar ciclos, lo hago con el algoritmo de Strongly Connected Components (SCCs), (Componentes Fuertemente Conexas) 
+que es lineal.
+Total: sale una algoritmo lineal para 2-SAT.
+
+
+
+
+
+
+Pensamos ahora en SAT en general.
+
+Apuntes de la web de LI (https://www.cs.upc.edu/~roberto/li.html): "Breve resumen sobre NP y NP-completitud":
+
+Remembering some intuitions about NP and NP-completeness
+(for more formal definitions and details, see the slides of the EDA course on this same website)
+
+Decision problems and complexity classes
+
+Here we focus on decision problems, the ones with output “yes” or
+“no”, and on classifying problems (not algorithms!) according to the
+time needed to solve them (with the best of the available algorithms),
+and we will call problem A "harder" than problem B if solving A needs
+more time than solving B.
+
+For example, given a sequence of integers, the problem of deciding
+whether it contains the integer 7 can be solved in linear time. We say
+that it belongs to the class of problems solvable in linear time.  If
+moreover the input sequence is ordered, then we can say more: it
+belongs to a proper subclass of the problems solvable in linear time,
+namely the ones solvable in logarithmic time (in this case, by binary
+search). Here we see that in fact what matters is how fast the running
+time grows depending on the size of the input.
+
+Other problems are not linear, but harder. The class of polynomial
+problems is called P. Note that all logarithmic, linear, quadratic,
+cubic, etc., problems are in P.
+
+Some other problems are even harder, and are not in P. 
+The class of exponential problems is called EXP (solvable in time
+with the input size n in the exponent; note that for large enough n,
+the number 2^n is much larger than n^2, n^3, or n^k for whatever
+constant k). It is known that P ⊂ EXP (there are problems in EXP that
+are not in P).
+
+
+The class NP, membership in NP, NP-hardness and NP completeness
+
+There is a special class, NP, for which it is known that  P ⊆ NP ⊆ EXP. 
+NP is the class of problems having a Nondeterministic Polynomial
+algorithm. Roughly, this means that a problem A is in NP if, whenever
+the answer to A for a given input is “yes”, there is a “witness” (a
+"solution") that allows one to verify this “yes” in polynomial time.
+
+The most famous problem in NP is SAT, the problem of deciding whether
+a given propositional input formula F is satisfiable or not. This
+problem is clearly in NP: if the answer is “yes”, the witness is the
+model, which can be checked in polynomial (even linear) time.
+
+Another example of problem in NP is 3-colorability: can we color each
+node of a given graph G with one of three colors, such that adjacent
+nodes get different colors? Here the witness is the coloring,
+indicating each node’s color.
+
+A problem is called NP-Hard if any problem in NP can be polynomially reduced
+to it.  SAT is NP-hard: any problem in NP can be polynomially reduced
+to (or solved by, or expressed as) a SAT problem. This means that for
+any problem A in NP and input data D for A, we can build in polynomial
+time a SAT formula F(D) that is satisfiable if, and only if, the
+answer to A on input D is “yes”.
+
+Moreover, from a satisfiablity witness of F(D) (i.e., a model), it is
+usually easy to reconstruct a witness (or a “solution”) for A on input D.
+
+
+For example, we can reduce 3-colorability to SAT. 
+Let G be a graph with n nodes. 
+Introduce 3n propositional symbols x_ic meaning “node i gets color c” and let F(G) state:
+  -for each node i, that node i gets at least one color (a clause x_i1 ∨ x_i2 ∨ x_i3 ) and, 
+  -for each edge (i, j), that i and j do not get the same color: 
+       three clauses per edge:   ¬x_i1 ∨ ¬x_j1,   ¬x_i2 ∨ ¬x_j2, and  ¬x_i3 ∨ ¬x_j3. 
+Then F(G) is satisfiable iff G is 3-colorable.
+Moreover, from any model for F(G) it is trivial to reconstruct a 3-coloring for G.
+
+
+Apart from SAT, many other problems in NP have been proved NP-hard too. 
+
+
+A problem is called NP-complete if A) it is in NP and B) it is NP-hard.
+
+Note that, by such reductions, if we had a polynomial algorithm for
+any single NP-hard problem, then we would have it for ALL problems in NP!
+That is, we would have P=NP. 
+That would have dramatic consequences, because there are many very
+important real-world problems in NP. 
+
+It is unknown whether P = NP.
+In fact, there is a million-dollar prize (search “millenium problems”)
+for whoever proves either P = NP or P != NP.
+
+------------------------------
+
+
+Ejercicio:
+
+           SAT           TAUT
+     ---------------------------------
+ CNF | NP-completo |                 |       
+     ---------------------------------
+ DNF |             |                 |       
+     ---------------------------------
+
+Rellena el resto de la tabla con la complejidad algorítmica correspondiente.
+
+
+Respuesta:
+
+
+           SAT           TAUT
+     ---------------------------------
+ CNF | NP-completo |   lineal (2)    |       
+     ---------------------------------
+ DNF | lineal (1)  | NP-completo (3) |       
+     ---------------------------------
+
+
+(1) Por el ejercicio 12, sabemos que para una fórmula en DNF podemos decidir si es satisfactible en tiempo lineal.
+
+(2) Una CNF  C1 &...& Cn es tautologia ssi todas sus cláusulas Ci son tautologias.
+    Sabemos por el ejercicio 5. que una cláusula es una tautología ssi contiene a la vez p y ¬p.
+
+(3) Una DNF  Cubo1 v...v CuboN  es tautologia ssi 
+           -(Cubo1 v...v CuboN) es insat.
+    Moviendo las negaciones hacia dentro en -(Cubo1 v...v CuboN) obtenemos una CNF F.
+    Al revés también:
+      Una CNF C1 &...& Cn      es insatisfactible ssi
+            -(C1 &...& Cn)     es tautología      ssi
+            Cubo1 v...v CuboN  es tautologia          
+                           donde Cubo1 v...v CuboN  es la DNF obtenida moviendo las 
+                           negaciones hacia dentro en -(C1 &...& Cn).
+    Por lo tanto, decidir si una DNF es tautología tiene que ser NP-completo! 
+    Si no, tendriamos una manera de hacer SAT en tiempo polinómico comprobando si C1 v...v Cn es tautologia!
+
+
+
+Para el proximo dia: ejercicios siguientes y apuntes--> la transformación de Tseitin a CNF equisatisfactible.
+
+
+
+
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+
+Teoría Clase 4.
+
+7. (dificultad 2) Dados n sı́mbolos proposicionales:
+7a) ¿Cuántas cláusulas distintas (como conjuntos de literales) hay?
+
+
+Dado un conjunto S de k elementos, ¿cuántos subconjuntos distintos tiene?
+S = {e1 e2 ... ek }
+     0   0 ...  0    denota el subconjunto vacio
+     0   0 ...  1    denota el subconjunto {ek}
+     ....
+     1   1 ...  1    denota el subconjunto S = {e1 e2 ... ek }
+Esto explica que hay 2^k subconjuntos distintos.
+
+Si tenemos n simbolos, ¿cuántos literales hay? 2n
+luego hay 2^(2n) cláusulas (subconjuntos de los 2n literales)  = 4^n.
+
+Otra manera de ver lo mismo:
+por cada uno de los n símbolos p, en una cláusula pasará una de las siguientes 4 situaciones:
+  a) están p y -p en la cláusula
+  b) está solo p  en la cláusula
+  c) está solo -p en la cláusula
+  d) no está ni p ni -p en la cláusula
+es decir, hay 4^n posibilidades de cláusulas.
+
+
+7b) ¿Cuántas de estas cláusulas son insatisfactibles?
+Sólo 1, la cláusula vacía.  En una cláusula  p1 v...v pk  v  -q1 v...v -qm  si k+m > 0, entonces sí es satisfactible.
+
+
+7c) ¿Cuántas cláusulas distintas y que no son tautologı́as hay?
+3^n:   por la otra manera de resolver el 7a): por cada p, desaparece el caso   "a) están p y -p en la cláusula."
+
+
+7d) ¿Cuántas cláusulas distintas que contienen exactamente un literal por cada sı́mbolo proposicional hay?
+2^n:   por la otra manera de resolver el 7a): por cada p, desaparece el caso   a) y el caso d).
+
+
+
+8. (dificultad 4) Propón un algoritmo eficiente que, dado un conjunto de cláusulas S, retorna un conjunto
+de cláusulas S' (no necesariamente definido sobre los mismos sı́mbolos de predicado que S) con
+como mucho 3 literales por cláusula, que es equisatisfactible a S (es decir, que es satisfactible si y
+sólo si S lo es).
+Ayuda: es posible introducir algún sı́mbolo de predicado p nuevo, que signifique:
+“l ∨ l' es cierto” para algún par de literales l y l'.
+
+si tengo una cláusula demasiado larga (más de 3 lits), puedo escribirla como l v l' v C donde C es el resto de la cláusula.
+Y entonces S es de la forma { l v l' v C } U S1.
+
+Cómo podemos expresar que p <-->  l v l'  mediante cláusulas de máximo 3 literales?  a --> b === -a v b
+                          p  -->  l v l'   ===  -p v l v l'
+                          p  <--  l v l'   ===   { l --> p,  l' --> p }  ===  { -l v p,   -l' v p }
+
+Sea S' el conjunto { p v C,   -l v p,   -l' v p,   -p v l v l'    } U S1,   NOTA: aqui p es un símbolo nuevo!!
+Hemos acortado en 1 literal 1 cláusula.
+Pero puedo repetir esto tantas veces como haga falta.
+Falta ver que   S es satisfactible  ssi  S' es satisfactible.
+
+A) ==>:    S es satisfactible  ==>  S' es satisfactible.
+S es satisfactible            ssi
+E I tq  I es modelo de S      ssi
+E I tq   I |= S.
+Si I |= l v l' entonces sea I' la interpretacion que EXTIENDE la I con I'(p)=1,  (I' es como I, excepto que además I'(p)=1)
+               si no,   sea I' la interpretacion que EXTIENDE la I con I'(p)=0.	       
+tenemos que I' |= S1, porque I |= S1.
+además I' |= { p v C,   -l v p,   -l' v p,   -p v l v l'    } porque (entre otras razones) I |= p v C.
+Por eso I' |= S' y por lo tanto  S' es sat.
+
+B) <==:    S' es satisfactible  ==>  S es satisfactible.
+Sea I' modelo de S'.
+Sea I la RESTRICCIÓN de I'  "olvidándonos" de la p.
+Y vemos que I |= S.
+
+
+
+
+
+9. (dificultad 2) Sea S un conjunto de cláusulas de Horn donde la cláusula vacía no está en S. Demuestra que S es satisfactible
+(dando un modelo para S) si no hay ninguna cláusula que sólo conste de un único literal positivo.
+
+Todas las cláusulas de S son de Horn y no-vacías, es decir, de la forma  p1 v...v pk  v  -q1 v...v -qm
+donde k+m > 0, y  k<=1.
+Cómo pueden ser? de la forma:
+
+a) p
+b) p v -q1 v...v -qn   con n>0
+c)     -q1 v...v -qn   con n>0
+
+Ahora dice que tampoco hay de tipo a):  no hay ninguna cláusula que sólo conste de un único literal positivo.
+Entonces es satisfactible: un modelo es la I donde para todo símbolo p tenemos I(p)=0.
+
+
+
+
+
+10. (dificultad 2) Demuestra que el enunciado del ejercicio previo es falso cuando S no es de Horn.
+
+Damos un contrajemplo de un conjunto de cláusulas S donde:
+  -la cláusula vacía no está en S y
+  -no hay ninguna cláusula que sólo conste de un único literal positivo
+  -S es insatisfactible.
+
+Para que no sea de Horn, se nos ocurre poner la cláusula más sencilla que no es de Horn: p v q
+Ejemplo: Sea S el conjunto de cláusulas:
+  p v  q
+  -p
+  -q
+
+
+Otro ejemplo:
+  p v  q 
+  p v -q
+ -p v  q
+ -p v -q.
+
+
+ Esto es insatisfactible, porque cada una de las cuatro interpretaciones que hay es falsificada por una de las cláusulas.
+ es decir, para toda I, hay una cláusula C en S tal que I no satisface C.
+ 
+ 
+ 
+ 
+ 
+12. (dificultad 3) Para una fórmula en DNF, ¿cuál es el mejor algoritmo posible para decidir si es satisfactible? ¿Qué coste tiene?
+Una DNF (disjunctive normal form) es una disyuncion (OR) de cubos, donde cada cubo es p1 &...& pk  &  -q1 &...& -qm.
+Una DNF = { C1 v...v Cn } es satisfactible  ssi  algun cubo Ci es satisfactible.
+Un cubo  p1 &...& pk  &  -q1 &...& -qm  es satisfactible   ssi    
+                   no hay ningun simbolo que aparezca en un literal positivo del cubo y también en uno negativo.
+Luego el coste puede ser lineal.
+
+
+
+Resolucion:
+
+   p v C      -p v D
+   -----------------    para algún símbolo p
+         C v D
+
+La resolución es CORRECTA? es decir, sean como sean C , D y p, tenemos que    (p v C) & (-p v D) |=   C v D ?
+
+Sea I un modelo de (p v C) & (-p v D).
+hay dos casos:
+I(p)=1  Entonces I |=  (p v C) & (-p v D)  ==>   I |= -p v D  ==>   I |= D  ==>   I |= C v D
+I(p)=0  Entonces I |=  (p v C) & (-p v D)  ==>   I |=  p v C  ==>   I |= C  ==>   I |= C v D.
+
+
+Ejemplo:  Sea S el conjunto de cláusulas
+{  p v  q,
+   p v -q,
+  -p v  q,
+  -p v -q
+}.
+Puedo obtener mediante resolución a partir de    p v  q     y    p v -q  (sobre la q) y obtengo  p v  p que es lo mismo que  p.
+Puedo obtener mediante resolución a partir de   -p v  q     y   -p v -q  (sobre la q) y obtengo -p v -p que es lo mismo que -p.
+A partir de las dos cláusulas nuevas  p    y   -p,  en otro paso puedo obtener  la cláusula vacía.
+
+
+S0 = S
+S1 = S0 U {p, -p, q, -q , pv-p,  qv-q, ... }
+S2 = S1 U { [] ... }
+S3 = S2 U ???
+
+
+
+Hay un teorema que dice:
+   S es insatisfactible    SSI   mediante resolucion puedo llegar a obtener la cláusula vacía.
+                                  (formalmente, SSI [] está en Res(S) )
+
+
+16. (dificultad 2) Demuestra que, para todo conjunto finito de cláusulas S, tenemos que Res(S) es un conjunto finito
+de cláusulas, si se consideran las cláusulas como conjuntos de literales (por ejemplo, C ∨ p es la
+misma cláusula que C ∨ p ∨ p).
+
+Si el conjunto inicial S tiene n símbolos distintos, entonces EXISTEN 2^2n cláusulas distintas (que es un número grande, 
+pero finito).
+Por lo tanto la resolución llegará un momento, una S_i, tal que S_i = S_{i+1}
+       es decir, que a partir de esta S_i ya no añadimos nada nuevo y todas las S_j a partir de ahi serán iguales.
+
+
+
+
+17. (dificultad 3) Sea S un conjunto de cláusulas. Demuestra que Res(S) es lógicamente equivalente a S.
+
+Sea I una interpretación cualquiera.
+Tenemos que demostrar que  I |= S   ssi   I |= Res(S).
+
+
+I |= Res(S)    ==>   I |= S  trivialmente, porque S es un subconjunto de Res(S) 
+                                            (por def. de Res(S) que es la union de todas las Si s).
+
+I |= S         ==>   I |= Res(S) ?
+
+Hemos obtenido Res(S)  a partir de S, a base de añadir, un número finito de veces k, una conclusión por
+ resolución a partir de cláusulas que ya teníamos.
+Demostramos que para toda I,   I |= S    ==>   I |= Res(S) por induccion sobre k.
+Si k=0, trivial porque entonces S  = Res(S).
+Si k>0, supon que el primer paso es de S a un S', añadiendo 1 cláusula por resolución a partir de S. 
+Por corrección de la resolucion S |= S', por lo que I |= S    ==>   I |= S'.
+Por Hipotesis de Induccion, como el número de pasos desde S' a Res(S) es k-1, tenemos que I |= Res(S). qed.
+
+
+18. (dificultad 2) ¿La resolución es completa? Demuéstralo.
+
+pendiente para la próxima clase. y los ejercicios hasta el 27 y también el sudoku.
+
+
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+
+Teoría Clase 3.
+
+
+
+26. (dificultad 2) Supongamos que |P| = 100 y que nos interesa determinar si una
+fórmula F construida sobre P es satisfactible o no. Si el algoritmo está basado
+en un análisis de la tabla de verdad, y evaluar F en una interpretación I dada
+cuesta un microsegundo (10^−6 segundos), ¿cuántos años tardará? 
+
+cuantas I's hay?   hay 2^100
+
+2^10 = 1024 ~~ 10^3
+2^100       ~~ 10^30
+
+evaluarlas todas tarda  2^100 * 10^-6  segundos = 10^30 * 10^-6  segundos = 10^24 segundos = 
+10^24 / (365*24*3600) años = 4 * 10^16 años aprox.
+
+
+
+27. (dificultad 2) Una *función booleana de n entradas* es una función
+f : {0, 1}^n → {0, 1}, es decir, una función que toma como entrada una cadena de n
+bits y devuelve un bit. ¿Cuántas funciones booleanas de n entradas hay?
+
+x---|--|
+    |  |--- 
+y---|--|
+
+
+
+hay 2 elevado a (2 elevado a n): hay tantas funciones como tiras de 2^n bits
+
+Ejemplo: n=2: hay tantas funciones como tiras de 2^n bits = tiras de 4 bits = 2^4 = 16
+
+
+x y |   0    and no x->y  x  no y->x  y    xor    or        nor    =    -y   y->x   -x   x->y  nand    1
+----|---------------------------------------------------------------------------------------------------
+0 0 |   0     0     0     0     0     0     0     0          1     1     1     1     1     1     1     1
+0 1 |   0     0     0     0     1     1     1     1          0     0     0     0     1     1     1     1
+1 0 |   0     0     1     1     0     0     1     1          0     0     1     1     0     0     1     1     
+1 1 |   0     1     0     1     0     1     0     1          0     1     0     1     0     1     0     1 
+
+
+Ejemplo: n=3;  hay 2^8 = 256
+x y z 
+0 0 0
+...
+1 1 1 
+
+si n=4, hay 2^64 =   ~~ 65000
+
+
+28. (dificultad 2) Cada fórmula F representa una única función booleana: la que
+devuelve 1 exactamente para aquellas cadenas de bits I tales que eval_I(F) = 1. 
+
+Por ejemplo, la funcion booleana "and" (de 2 entradas x, y) la podemos representar mediante las fórmulas
+x & y
+(x & x) & y
+-(-x v -y) 
+-(-x v -y) & y 
+...
+
+
+Por eso, dos fórmulas son lógicamente equivalentes si y sólo si representan
+la misma función booleana. ¿Cuántas funciones booleanas (o cuántas fórmulas
+lógicamente no-equivalentes) hay en función de n = |P|?
+
+hay 2 elevado a (2 elevado a n): hay tantas funciones como tiras de 2^n bits
+
+
+
+31. (dificultad 3) Escribe en una tabla de verdad las 16 funciones booleanas de 2
+entradas. ¿Cuántas de ellas sólo dependen de una de las dos entradas? ¿Cuántas
+dependen de cero entradas? ¿Las otras, vistas como conectivas lógicas, tienen
+algún nombre? Ya sabemos que podemos expresar cualquier función booleana
+con el conjunto de tres conectivas {∧, ∨, ¬}, es decir, cualquier función booleana
+es equivalente a una fórmula construida sobre estas tres conectivas. ¿Es cierto
+esto también para algún conjunto de sólo dos de las 16 funciones? (Hay varias
+maneras, pero basta con dar una sola.)
+
+Sí, con solo or y not, por ejemplo.
+
+32. (dificultad 3) Demuestra que cualquier función booleana de dos
+entradas se puede expresar con sólo nor o bien con sólo nand, donde
+nor(F, G) es ¬(F ∨ G), y nand(F, G) es ¬(F ∧ G).
+
+lo hacemos para nand:
+
+not F    ==  F nand F
+F or G   ==  not( not(F) and not(G) ) ==  not(F) nand not(G) == (F nand F) nand (G nand G)
+F and G  ==  not( F nand G ) == (F nand G) nand (F nand G)
+
+
+
+37. Simplifica el siguiente código, reemplazándolo por otro de la forma  return(....);
+int i;
+bool a, b;
+....
+if (a and i>0)        return b;                        (1)
+else if (a and i<=0)  return false;                    (2)
+else if (a or b)      return a;                        (3)
+else                  return (i>0);                    (4)
+
+Tendremos tres símbolos de predicado; a, b, i>0.
+
+
+a,  b, i>0  
+-----------
+0   0   0      0    (4)
+0   0   1      1    (4)
+0   1   0      0    (3)
+0   1   1      0    (3)
+1   0   0      0    (2)
+1   0   1      0    (1)
+1   1   0      0    (2)
+1   1   1      1    (1)
+
+
+return( a=b and i>0 );
+
+
+
+33.
+A dice: “B lo hizo y C es inocente”
+B dice: “Si A es culpable entonces C también lo es”
+C dice: “Yo no lo hice, lo hizo al menos uno de los otros”
+
+Introducimos símbolos de predicado: a,b,c que significan: "a lo hizo", "b lo hizo", "c lo hizo".
+Las tres declaraciones son:
+  b & -c
+  a -> c
+  -c & (a v b)
+
+Para saber si pueden ser verdad las tres declaraciones, formalmente, tenemos que ver si es 
+satisfactible la conjuncion (and) de las tres fórmulas.
+Sólo hay un modelo:  -a  b  -c.
+
+Sólo hay un modelo I:  I(a)=0,   I(b)=1,   I(c)=0.
+
+
+No son contradictorias.
+Si son todos inocentes, A y C mintieron.
+Si nadie mintió, sólo b es culpable.
+
+
+
+34.
+escribimos indefinido como #
+
+podemos hacerlo asi, de manera razonable, suponiendo que # en nuestra aplicación modela "no sé":
+
+if ( f(...) and g(...) ) { y en el caso de que # modela "no termina"?????
+}
+
+eval_I( not F) =
+   1   da:   0
+   0         1
+   #         #
+
+eval_I( F and G ) =
+  0  0  da:   0   
+  0  1        0
+  0  #        0
+  1  0        0
+  1  1        1
+  1  #        #
+  #  0        0
+  #  1        #
+  #  #        #
+
+eval_I( F or G ) =
+  0  0  da:    0  
+  0  1         1
+  0  #         #
+  1  0         1
+  1  1         1
+  1  #         1
+  #  0         #
+  #  1         1
+  #  #         #
+
+---------------------------------------
+Y si # modela "no termina"?????
+
+Por ejemplo, en un programa como:
+
+if ( not f(...) ) { 
+}
+
+if ( f(...) and g(...) ) { 
+}
+
+if ( f(...) or g(...) ) { 
+}
+
+eval_I( not F) =
+   1   da:   0
+   0         1
+   #         #
+
+eval_I( F and G ) =
+  0  0  da:   0   
+  0  1        0
+  0  #        0
+  1  0        0
+  1  1        1
+  1  #        #
+  #  0        #   <-------- este caso cambia
+  #  1        #
+  #  #        #
+
+eval_I( F or G ) =
+  0  0  da:    0  
+  0  1         1
+  0  #         #
+  1  0         1
+  1  1         1
+  1  #         1
+  #  0         #
+  #  1         #  <-------- este caso cambia
+  #  #         #
+
+
+35. (dificultad 2) Como el ejercicio anterior, pero considerando I: P → [0...1]  (un número real en el intervalo cerrado éste).
+
+eval_I( not F)    =  1 - eval_I(F)
+eval_I( F and G ) =  eval_I(F) * eval_I(G)
+eval_I( F or  G ) =  (eval_I(F) + eval_I(G)) -  (eval_I(F) * eval_I(G))
+
+Esto nos lo hemos inventado, pero es incorrecto en general porque las probabilidades de las subfórmulas no son independientes.
+
+Por ejemplo, la evaluacion de F and F debería dar lo mismo que la de F y aqui no es así.
+
+
+-----------------------
+
+
+Con esto acabamos el tema 2.  Vamos al Tema 3.
+
+Ejercicios tema 3:
+
+5. (dificultad 2) Demuestra que una cláusula es una tautología ssi contiene a la vez p y ¬p
+para un cierto símbolo proposicional p.
+
+Demostraremos que una cláusula de la forma  p1 v...v pm  v  -q1 v...v -qn  NO es tautologia  ssi  NO contiene a la vez p y ¬p.
+
+      p1 v...v pm  v  -q1 v...v -qn  NO es tautologia                        ssi  
+EI tal que I no es modelo de p1 v...v pm  v  -q1 v...v -qn                   ssi 
+EI tal que  NO I |= p1 v...v pm  v  -q1 v...v -qn                            ssi 
+EI tal que max( eval_I(p1)... eval_I(pm), eval_I(-q1), ... eval_I(-qn)) = 0  ssi 
+EI tal que I(pi)=0 para todas las pi   y   I(qj)=1 para todas las qj         ssi
+pi != qj para toda i,j
+
+
+6.
+
+6a. Sea S = {C1,C2....}. Cada cláusula Ci tiene al menos un literal positivo (un símbolo de predicado sin negar).
+    Un modelo que va a satisfacer todas las cláusulas de S es la I tal que I(p)=1 para todo símbolo p.
+
+6b. Sea S = {C1,C2....}. Cada cláusula tiene al menos un literal negativo (un símbolo de predicado negado).
+    Un modelo que va a satisfacer todas las cláusulas de S es la I tal que I(p)=0 para todo símbolo p.
+
+6c. Para todo símbolo de predicado p se cumple que: o bien p aparece
+    solo en literales positivos en S, o bien p aparece solo en
+    literales negativos en S.
+    Es decir, cada cláusula es de la forma   p1 v...v pm  v  -q1 v...v -qn  
+        -las pi's solo aparecen positivas en las demás cláusulas
+        -las qi's solo aparecen en literales negativos en las demás cláusulas
+
+
+    Un modelo que va a satisfacer todas las cláusulas de S es la I tal que 
+                 I(p)=0 para todo símbolo p tal que p sólo aparece negativo
+                 I(p)=1 para todo símbolo p tal que p sólo aparece positivo
+
+     Nota: en realidad esta I va a satisfacer TODOS los literales de TODAS la cláusulas (cuando en realidad me bastaba con cumplir
+     UN literal de cada cláusula).
+
+Próximo dia: ejercicios del 7 en adelante y Resolucion.
+
+
+
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+
+Teoría Clase 2.
+
+
+-Recordatorio de la clase de teoría 1.
+
+Más ejercicios del capítulo 2 (hoja p2):
+
+
+5. Sean F y G dos fórmulas cualesquiera.
+   ¿Es cierto que F ∨ G es tautología  si y sólo  si alguna de las dos fórmulas F o G lo es? 
+   Demuéstralo usando sólo la definición de la LProp.
+
+   No. No es cierto.  Damos un contraejemplo de fórmulas F y G para
+   las cuales la propiedad es falsa, es decir, donde F v G es
+   tautología, pero ni F ni G es tautologia:
+
+   Sea F la fórmula  p, donde p es un símbolo de predicado.
+   Sea G la fórmula -p.
+   Tenemos que F v G es tautología, porque
+     p v -p  es tautología                ssi    [por definición de tautologia     ]
+     toda I es modelo de p v -p           ssi    [por definición de modelo              ]
+A  I,  I |=  p v -p                       ssi    [por definición de |=                  ]
+A  I,  eval_I( p v -p ) = 1               ssi    [por definición eval_I( v )            ]
+A  I,  max( eval_I(p),   eval_I(-p) ) = 1 ssi    [por definición eval_I( - )            ]
+A  I,  max( eval_I(p), 1-eval_I( p) ) = 1 ssi    [dado que eval_I(p) siempre es 0 ó 1, y por definicion de max   ]
+A  I,                 1               = 1 ssi    [ porque 1=1 es cierto ]
+       cierto
+
+   Pero ni F ni G son tautologías: 
+
+     F no es tautología                   ssi    [como F es p     ]
+     p no es tautología                   ssi    [por definición de tautologia     ]
+E I  tq I no es modelo de p               ssi    [por definición de modelo     ]
+E I  no  I |= p                           ssi    [por definición de |=     ]
+E I  eval_I(p)=0                          ssi    [por definición de eval     ]
+E I  I(p)=0                               ssi    cierto
+
+
+     G no es tautología                   ssi    [como G es -p     ]
+     -p no es tautología                  ssi    [por definición de tautologia     ]
+E I  tq I no es modelo de -p              ssi    [por definición de modelo     ]
+E I  no  I |= -p                          ssi    [por definición de |=     ]
+E I  eval_I(-p)=0                         ssi    [por definición de eval  -   ]
+E I  1- eval_I(p)=0                       ssi    [por definición de eval     ]
+E I  1-I(p)=0                             ssi    [por aritmetica     ]
+E I  I(p)=1                               ssi    cierto
+
+
+
+
+7. Sean F y G dos fórmulas. 
+   Demuestra usando sólo la definición de la LProp que F es consecuencia lógica de G, es decir,    G |= F   
+si y sólo si G ∧ ¬F es insatisfactible.
+
+F es consecuencia lógica de G             ssi    [ por def. de consecuencia logica   ]
+todo modelo de G satisface F              ssi    [ por def. de modelo   ]
+A I, si I |= G, entonces I |= F           ssi    [ por lo que significa si... entonces ...]
+A I, no I |= G  o  I |= F                 ssi    [ por def de |=  ]
+A I, eval_I(G)=0  o    eval_I(F)=1        ssi    [ por aritmetica  ]
+A I, eval_I(G)=0  o  1-eval_I(F)=0        ssi    [ por def de min  ]
+A I, min( eval_I(G), 1-eval_I( F) )=0     ssi    [ por def de eval_I(-)  ]
+A I, min( eval_I(G),   eval_I(¬F) )=0     ssi    [ por def de eval_I(&)  ]
+A I, eval_I(G ∧ ¬F)=0                     ssi    [ por def de modelo  ]
+G ∧ ¬F no tiene modelos                   ssi    [ por def de insatisfactible ]
+G ∧ ¬F es insatisfactible
+
+
+
+
+
+
+8. Sean F y G dos fórmulas. 
+   Demuestra usando sólo la definición de la LProp que 
+   F es lógicamente equivalente a G    ssi    (G ∧ ¬F) ∨ (F ∧ ¬G) es insatisfactible    ssi    F <--> G tautologia
+
+
+Hacemos primero el primer ssi:
+
+(G ∧ ¬F) ∨ (F ∧ ¬G) es insatisfactible              ssi    [por definición de insatisfactible]
+A I,  no I |= (G ∧ ¬F) ∨ (F ∧ ¬G)                   ssi    [por definición de |= ]
+A I,  eval_I( (G ∧ ¬F) ∨ (F ∧ ¬G)) = 0              ssi    [por definición de eval v]
+A I,  max( eval_I(G ∧ ¬F), eval_I(F ∧ ¬G) ) = 0     ssi    [por definición de eval &]
+A I,  max( min(eval_I(G),  eval_I(¬F)), min(eval_I(F),  eval_I(¬G)) ) = 0     ssi  [por definición de eval -]
+A I,  max( min(eval_I(G),1-eval_I( F)), min(eval_I(F),1-eval_I( G)) ) = 0     ssi  [por definición de min y max y 
+                                                                                     porque eval siempre da 0 o 1      ]
+A  I,  eval_I(F)=eval_I(G)                          ssi    [porque eval siempre da 0 o 1      ]    	
+A  I,  (eval_I(F)=1 ssi eval_I(G)=1)                ssi    [por definición de |=              ]		 
+A  I,  (I |= F  ssi I |= G )                        ssi    [por definición de modelo          ]		 
+A  I,  (I es modelo de F ssi I es modelo de G)      ssi    [por definición de equivalencia modelo      ] 
+F y G tienen los mismos modelos                     ssi    [por definición de equivalencia lógica      ] 
+F es lógicamente equivalente a G.
+
+
+Para el segundo ssi:
+
+F <--> G tautologia                        ssi    por def <-->
+(F --> G)   &   (G --> F) tautologia       ssi    por def -->
+(-F v G)    &   (-G v F) tautologia        ssi    por def taut
+toda I es modelo de (-F v G)  &  (-G v F)  ssi    por def de modelo
+A I,  I |= (-F v G)  &  (-G v F)           ssi    por def |= 
+A I,  eval_I( (-F v G)  &  (-G v F) )=1    ssi    por def eval &
+A I,  min( eval_I(-F v G), eval_I(-G v F) )=1    ssi    por def eval v
+A I,  min( max(  eval_I(-F),eval_I(G)), max(  eval_I(-G), eval_I(F) )=1    ssi    por def eval -
+A I,  min( max(1-eval_I( F),eval_I(G)), max(1-eval_I( G), eval_I(F) )=1    ssi   [por definición de min y max y 
+                                                                                   porque eval siempre da 0 o 1      ]    
+A  I,  eval_I(F)=eval_I(G)
+y seguimos igual que en la demostración anterior
+
+
+
+
+
+
+
+Consecuencia de los ejercicios 6,7,8:
+En la práctica nos interesa siempre, averiguar este tipo de propiedades:
+      F es *satisfactible*                  si F tiene algún modelo
+      F es *insatisfactible*                si F no tiene modelos
+      F es *tautología*                     si toda I es modelo de F
+      G es *consecuencia lógica* de F       si todo modelo de F satisface G  (se denota F |= G)
+      F y G son *lógicamente equivalentes*  si F y G tienen lo mismos modelos   (se denota F ≡ G)
+¿Cómo lo podemos hacer, si lo único que tenemos es un SAT solver?
+          F es tautología                       ssi  -F es insatisfactible.                         OK
+          G es consecuencia lógica  de F        ssi   F ∧ ¬G es insatisfactible.                    OK
+          F y G son  lógicamente equivalentes   ssi  (G ∧ ¬F) ∨ (F ∧ ¬G) es insatisfactible.        OK
+
+
+
+
+
+16. Sean F y G dos fórmulas cualesquiera.
+    Si F -> G es satisfactible y F es satisfactible, entonces ¿G es satisfactible?
+    Demuéstralo usando sólo la definición de la LProp.
+
+
+Hacemos un intento de demostración:
+
+    F -> G es satisfactible            ssi    [por def de -> ]
+    -F v G es satisfactible            ssi    [por def de satisfactible ]
+    -F v G tiene algun modelo          ssi    [por def de modelo ]
+E I,  I |= -F v G                      ssi    [por def de |= ]
+E I,  eval_I(-F v G)=1                 ssi    [por def de eval v]
+E I,  max(   eval_I(-F), eval_I(G) )=1 ssi    [por def de eval -]
+E I,  max( 1-eval_I( F), eval_I(G) )=1 ssi    [por def de max]
+E I,  1-eval_I( F)=1   o  eval_I(G)=1  ssi    [por aritmetica]
+E I,    eval_I( F)=0   o  eval_I(G)=1   
+
+
+
+OJO:  NO puedo escribir      E I,    eval_I( F)=0   v   eval_I(G)=1   
+      NO tiene ningún sentido, porque v es una conectiva que sólo tiene sentido dentro de formulas
+      y   eval_I( F)=0    NO es una fórmula.  Aquí estanos razonando/explicando en català/castellano.
+
+
+
+    F es satisfactible        ssi    [por def de satisfactible ]
+    F tiene algun modelo      ssi    [por def de modelo ]
+E I',  I' |= F                ssi    [por def de |= ]
+E I',  eval_I'(F)=1           
+
+De este intento de demostración, vemos que si existe una I que no es
+modelo de F y otra I' que sí es modelo de F, entonces ya se cumplen las dos condiciones de
+que F -> G es satisfactible y F es satisfactible, y esto no implica nada sobre la G!
+
+Esto nos inspira para darnos cuenta de que la propiedad es falsa, y para dar este contraejemplo:
+ Sea F la fórmula p
+ Sea G la fórmula p & -p.
+Entonces F -> G es satisfactible y F es satisfactible, pero G no lo es!
+
+    F -> G es satisfactible                 ssi    [por def de F y G ]
+    p -> (p&-p) es satisfactible            ssi    [por def de -> ]
+    -p v (p&-p) es satisfactible            ssi    [por def de satisfactible ]
+    -p v (p&-p) tiene algun modelo          ssi    [por def de modelo ]
+E I,  I |= -p v (p&-p)                      ssi    [por def de |= ]
+E I,  eval_I(-p v (p&-p))=1                 ssi    [por def de eval v]
+E I,  max(   eval_I(-p), eval_I((p&-p)) )=1 ssi    [por def de eval -]
+E I,  max( 1-eval_I( p), eval_I((p&-p)) )=1 ssi    [por def de max]
+E I,  1-eval_I( p)=1   o eval_I((p&-p))=1   ssi    [por aritmetica]
+E I,    eval_I( p)=0   o eval_I((p&-p))=1   ssi    [cogemos la I tal que I(p)=0]
+cierto
+
+
+    F es satisfactible        ssi    [por def de F ]
+    p es satisfactible        ssi    [por def de satisfactible ]
+    p tiene algun modelo      ssi    [por def de modelo ]
+E I',  I' |= p                ssi    [por def de |= ]
+E I',  eval_I'(p)=1           ssi    [cogemos la I' tal que I'(p)=1]
+cierto
+
+   G is insatisfactible (ver ejercicio 2).
+
+
+
+
+
+
+21. Demuestra que la equivalencia lógica es realmente una relación de *equivalencia*.
+
+Una relacion binaria R sobre un conjunto S es un subconjunto del producto cartesiano S x S.
+Es decir R nos dice qué parejas están relacionadas, qué parejas (e,e') están en R (donde e y e' son elementos de S).
+  R es *reflexiva*  si (e,e) está en R                                         para todo e        de S.
+  R es *simétrica*  si (e,e') en R                    implica  (e',e)   en R   para todo e,e'     de S.
+  R es *transitiva* si (e,e') en R  y  (e',e'') en R  implica  (e, e'') en R   para todo e,e',e'' de S.
+Y si R cumple las tres propiedades entonces R es una relación  *de equivalencia*.
+
+
+Otras notaciones:
+ -como un predicado binario:
+   R es *reflexiva*  si R(e,e)                                      para todo e        de S.
+   R es *simétrica*  si R(e,e')                  implica  R(e',e)   para todo e,e'     de S.
+   R es *transitiva* si R(e,e') y  R(e',e'')     implica  R(e,e'')  para todo e,e',e'' de S.
+ -como una relacion infija:
+   R es *reflexiva*  si eRe                               para todo e        de S.
+   R es *simétrica*  si eRe'              implica  e'Re   para todo e,e'     de S.
+   R es *transitiva* si eRe y  e'Re''     implica  eRe''  para todo e,e',e'' de S.
+
+
+Por ejemplo si R es >,  la notacion infija es mucho más habitual:   escribimos e > e', etc.
+
+
+
+
+
+
+18. Demuestra las siguientes equivalencias entre fórmulas:
+F ∧ F       ≡ F                   idempotencia de ∧
+F ∨ F       ≡ F                   idempotencia de ∨
+F ∧ G       ≡ G ∧ F               conmutatividad de ∧
+F ∨ G       ≡ G ∨ F               conmutatividad de ∨
+(F ∧ G) ∧ H ≡ F ∧ (G ∧ H)         asociatividad de ∧
+(F ∨ G) ∨ H ≡ F ∨ (G ∨ H)         asociatividad de ∨
+
+Estas tres propiedades (idempotencia, conmutatividad, asociatividad
+de & y de v) nos indican que a veces podemos escribir las fórmulas de
+manera más "relajada", omitiendo algunos paréntesis. Y también, que
+podemos ver una CNF como un CONJUNTO (and) de cláusulas, y podemos ver
+una cláusula como un CONJUNTO (un or) de literales.
+
+
+¬¬F         ≡ F                   doble negación
+¬(F ∧ G)    ≡ ¬F ∨ ¬G             ley de De Morgan 1
+¬(F ∨ G)    ≡ ¬F ∧ ¬G             ley de De Morgan 2
+
+Estas tres propiedades nos sirven para tranformar fórmulas "moviendo
+las negaciones hacia dentro", hasta que sólo haya negaciones aplicadas
+a símbolos de predicado.
+
+
+(F ∧ G) ∨ H ≡ (F ∨ H) ∧ (G ∨ H)   distributividad 1
+(F ∨ G) ∧ H ≡ (F ∧ H) ∨ (G ∧ H)   distributividad 2
+
+Una vez las negaciones están aplicadas a los símbolos de predicado, aplicando distributividad 1
+   (F ∧ G) ∨ H   ===>   (F ∨ H) ∧ (G ∨ H)
+de izquierda a derecha
+obtenemos una CNF.
+
+
+
+Hay un detalle:   Demuestra que p ∧ (q ∨ q)  ≡  p ∧ q.
+Podemos "aplicar" alegremente la idempotencia del v sobre la subfórmula q v q?
+No! Falta demostrar primero el siguiente Lema de Sustitución:
+
+
+23. Lema de Sustitución.  
+    Sean F,G,G' fórmulas, con G≡G'.
+    Si en F sustituimos una aparición de una subfórmula G por G' obtenemos una nueva fórmula F' con F≡F'.
+
+   En el ejemplo de arriba;  F  es p ∧ (q ∨ q)
+                             G  es     (q ∨ q)
+                             G' es      q
+                             F' es p ∧  q.
+
+
+
+
+Para el proximo dia:  Ejercicios 26,27,28,31,32,33,34,35,36,37.
+
+
+
+
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+
+
+Labo Clase 2.
+
+
+
+
+1. Propagación eficiente con occur lists:
+   El papel de:
+       uint indexOfNextLitToPropagate;
+
+La pila de literales puede ser por ejemplo:
+
+..... 0 -4 6 -7 -12      0 -9 16 -25 13 8 
+                            ^
+                            |
+                           indexOfNextLitToPropagate
+
+Por el hecho de propagar la decisión -9 (visitando las clausulas que salen en la Occurlist
+del 9), he empilado estos: 16 -25 13 8.  Despues, avanzo el indexOfNextLitToPropagate:
+
+..... 0 -4 6 -7 -12      0 -9 16 -25 13 8 
+                              ^
+                              |
+                            indexOfNextLitToPropagate
+
+Ahora tengo que propagar el literal 16, (visitando las clausulas que
+salen en la Occurlist del -16). Supongamos que esto propaga: 83 -32  17. Tendré:
+
+..... 0 -4 6 -7 -12      0 -9 16 -25 13 8  83 -32 17
+                              ^
+                              |
+                            indexOfNextLitToPropagate
+
+Despues, avanzo otra vez el indexOfNextLitToPropagate:
+
+..... 0 -4 6 -7 -12      0 -9 16 -25 13 8  83 -32 17
+                                  ^
+                                  |
+                                indexOfNextLitToPropagate
+
+Ahora tengo que propagar el literal -25, etc.
+
+Así, mientras el indexOfNextLitToPropagate no apunte más allá de la cima de la pila:
+  while ( indexOfNextLitToPropagate < modelStack.size() ) ....
+
+
+
+
+2. Algunas heurísticas para
+       int getNextDecisionLiteral()
+
+   Una posibilidad:
+     tener por cada variable un contador de apariciones en las cláusulas iniciales
+     cojo como siguiente literal a decidir la variable X indefinida que tenga el contador más alto.
+     nota: en este tipo de algoritmos de backtracking puro, no importa si tomo la decision X o la decisión -X
+           (porque de todas maneras acabará probando los dos literales).
+
+
+   Otra posibilidad:
+     contadores un poco más sofisticados: por ejemplo
+               por cada var X, 
+                     cuantas veces aparece +   c+(X) 
+                     cuantas veces aparece -   c-(X) 
+               coger como contador el minimo entre c+(X) y c-(X).
+               (para que propague siempre mucho, tanto si decidimos X, como cuando decidimos -X.
+
+               Ejemplo: en este caso:                                 minimo:
+                      variable 7  que sale 2 veces + y 20  veces -   contador: 2 
+                      variable 8  que sale 5 veces + y  6  veces -   contador: 5   <---- escogeré la 8 como siguiente decision
+
+
+   Otra posibilidad (que funciona muy bien):
+     contador por cada variable X que cuenta cuántas veces ha aparecido X en un conflicto
+   Mejora sobre esto:
+     contador por cada variable X que cuenta cuántas veces ha aparecido X en un conflicto *reciente*
+        para conseguir este efecto, dividimos por dos los contadores cada N conflictos
+
+
+     
+3. Haced experimentos con los problemas que son INsatisfactibles
+(porque los satisfactibles a veces los resuelves rápidamente sólo por
+suerte, por encontrar un modelo rápidamente por suerte). Al final, los
+importantes son los de 300 variables insatisfactibles.
+
+
+
+4. ¿Por qué los problemas que os damos de 300 variables son tan duros,
+        si sabemos resolver sudokus con 720 variables en instante?
+
+   Los problemas que os damos son de Random 3-SAT: cláusulas de 3 literales, generadas al azar.
+   Supongamos que tengo n=100 variables.
+   Genero clausulas de forma aleatoria.
+   por ejemplo, si genero la clausula   -9  8  23  esta cláusula prohibe como modelos las interpretaciones I que tienen 
+      I(9)=1   I(8)=0,  I(23)=0, que son la octava parte de todas las interpretaciones.
+
+   Si genero "pocas"  cláusulas, es casi seguro   satisfactible.
+   Si genero "muchas" cláusulas, es casi seguro insatisfactible.
+   Cuantas cláusulas hay que generar para que la probabilidad de sat vs insat sea 0.5?
+   La respuesta (encontrada empíricamente), es: aprox. 4.24n cláusulas.
+   Por ejemplo, si hay 100 variables, sería 424 cláusulas.
+   Y precisamente éstos problemas son los duros. Y éstos son los que os hemos dado.
+
+
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+
+Teoría. Clase 1.
+
+En LI veremos: 
+1. Introducción y Motivación para estudiar Lógica in Computer Science
+2. Definicion de Lógica Proposicional  (LProp)
+3. Deducción en Lógica Proposicional
+4. Definicion de Lógica de Primer Orden (LPO)
+5. Deducción en Lógica de Primer Orden
+6. Programación Lógica (Prolog)   <-- entrelazado en las clases de labo desde la 3a semana
+
+
+Estudiar la asignatura de LI: 
+Las clases son para que yo dé **intuición**. Hay **apuntes online** de todo, para todas las definiciones formales, etc.
+Una vez hayas **entendido** clases y apuntes, HAZ los exámenes colgados.
+También: HAZ los ejercicios de labo! Cuesta más hacerlos que entender uno ya hecho. Sin hacerlos no aprenderás.
+
+Trabaja las dos partes:  teoría (60% de la nota) Y labo (40%).
+NO intentéis "concentraros" sólo en una parte, porque suele salir mal: las dos se necesitan y complementan.
+
+
+
+1. Introducción y Motivación. ¿Por qué estudiar Logic in Computer Science?
+
+Lógica: los griegos, los matemáticos, y los informáticos.  
+        Principio S XX: necesidad de formalizar las matemáticas: Teoria de conjuntos. 
+                        Paradoja de Russell:    Sea   S = { C | C no pertenece a C }.   Entonces, ¿S pertenece a S?
+        Por qué Lógica Matemática NO es LI:
+            -necesidades completamente distintas
+            -hoy dia 99% de las publicaciones en lógica son de Computer Science.
+
+Informática: 
+    ¿Hay que estudiar las "herramientas del momento" (que no existían hace 20 años, ni existirán dentro de 20 años)?
+    ¿O hay que estudiar los Fundamentos (que permanecen, y que permiten aprender cualquier herramienta del momento)?:
+           -matemáticas (sobre todo discretas)
+           -algoritmia
+           -limitaciones inherentes de la computación: complejidad, calculabilidad...
+           -teoria de autómatas y lenguajes
+           -Lógica
+
+Lógica:
+    -El lenguaje natural (inglés, català...) es ambiguo, impreciso. Ejemplos.
+        "Aqui vendemos zapatos de piel de señora"
+        "El perro está listo para comer"
+    -¿Qué significa "formal"?  Que tiene una sintaxis y una semántica (significado) definidas de manera inambigua:
+           ¿Qué es una lógica?
+                  -sintaxis:     - ¿qué es una fórmula F?
+                  -semántica:   a- ¿qué es una interpretación I?    
+                                b- ¿Cúando una I SATISFACE una F?   I |= F?  
+
+           
+            Intuitivamente:
+                    "Interpretación" === "situación de la vida real a modelar"
+                    Una F "representa" aquellas I donde se satisface, se cumple.
+
+
+           Aqui veremos dos lógicas: LProp y LPO (con algunas de sus variantes)
+
+    -La "deducción intuitiva" que hacemos las personas,...   ¡Nos engaña!  Ejemplos.   
+        Rajoy:   "La gente honrada paga sus impuestos. Yo pago mis impuestos."
+                  (aunque los pague, eso no implica que él sea honrado)
+                  "Implicacion invertida": Si A --> B y tengo B, entonces A.  NO es correcto.
+
+        Lao Tse: "Los que piensan no hablan. Los que hablan no piensan." 
+                  (dice dos veces lo mismo?)
+                        A ---> B     es lo mismo que   -A v B
+                  Ax p(x) --> -h(x)      ===     Ax -p(x) v -h(x)
+                  Ax h(x) --> -p(x)      ===     Ax -h(x) v -p(x)      ===     Ax -p(x) v -h(x)
+                  dice (dos veces) que no hay nadie que hable y sepa.
+
+        "1. Lo que no mata engorda". "2. La lechuga no engorda". Eso implica que la lechuga mata?
+
+            m = "la lechuga mata"
+            e = "la lechuga engorda"
+
+            1. -m --> e    ===    m v e   (todas las cosas, ó matan, ó engordan. No hay nada que ni mate ni engorde).
+                           ===   -e --> m
+            2. -e
+            Esto sí implica m:  que la lechuga mata.
+
+
+Han surgido muchas aplicaciones directas de la lógica en la informática:
+     -Verificación de hardware y de software
+              -demostración de corrección (terminación, etc.)
+              -testing
+     -Aplicaciones "críticas" en:
+              -vidas humanas: centrales nucleares, químicas, aviones, tráfico, coches, trenes,...    "safety"
+              -confidencialidad: dinero electronico, firma electrónica, datos bancarios...           "security"
+              -economía: la bolsa, la telefonía, el sistema eléctrico...
+     -Inteligencia artificial, web semántica (representacion del conocimiento: ontologías, 
+                                              description logics, sistemas expertos, ...)
+     -bases de datos
+     -programación lógica
+     -uso de lógica para resolver problemas de optimización, planificación...:   por ejemplo, http://barcelogic.com/
+              -especificacion/formalización usando lógica
+              -"solvers" lógicos, por ejemplo, SAT solvers.
+ 
+
+
+
+2. Definicion de Lógica Proposicional  (LProp)
+----------------------------------------------
+
+ EN CUALQUIER LÓGICA:
+    ¿Qué es una lógica?       Lo siguiente DEFINE una lógica:
+         -sintaxis:     - ¿qué es una fórmula F?
+         -semántica:   a- ¿qué es una interpretación I?
+                       b- ¿Cúando una I SATISFACE una F?        notación:  I |= F
+
+    Usamos I para denotar interpretaciones y F,G para fórmulas.
+
+    En cualquier lógica:
+      I *es modelo* de F                    si I satisface a F   (se denota  I |= F )
+      F es *satisfactible*                  si F tiene algún modelo
+      F es *insatisfactible*                si F no tiene modelos
+      F es *tautología*                     si toda I es modelo de F
+      G es *consecuencia lógica* de F       si todo modelo de F satisface G  (se denota F |= G)
+      F y G son *lógicamente equivalentes*  si F y G tienen lo mismos modelos   (se denota F ≡ G)
+
+
+
+Nota:  Por definición tenemos que    F ≡ G   ssi   F |= G  y  G |= F.
+
+
+
+ Lógica Proposicional  (LProp):
+ -Sintaxis: las fórmulas se construyen con un conjunto P de símbolos de predicado:  p,q,r,...
+           y las conectivas: & es AND, v es OR, - es NOT      (∧ ∨ ¬)             
+           Ejemplo de fórmula  F:             p & ((q v -r) & ((-p v r) & -q))
+ -Semántica:
+     a- Una interpretación I es una funcion I: P --> {0,1}. Nos dice cada símbolo de P si es cierto o falso.
+     b- ¿Cúando una I SATISFACE una F?    I |= F?   Cuando eval_I(F) = 1.  Cuando la evaluación en I de F nos da 1.
+         eval_I(  p    ) =  I(p)              si p pertenece a P, si p es un símbolo de predicado (de nuestro conjunto P)
+         eval_I( -F    ) =  1 -  eval_I(F)
+         eval_I( F & G ) =  min( eval_I(F), eval_I(G) )
+         eval_I( F v G ) =  max( eval_I(F), eval_I(G) )
+
+dada una I, por ejemplo I(p)=1,  I(q)=0,  I(r)=1,   y una F como p & ((q v -r) & ((-p v r) & -q)),
+    ¿cuál es el coste de decidir si I es modelo de F?   cuanto cuesta calcular eval_I(F)?
+    Es lineal!
+
+
+
+Ejercicios del capítulo 2 de los apuntes:
+
+
+2. Demuestra que p & -p  es insatisfactible usando sólo la definición de la LProp.
+
+     p & -p  es insatisfactible           ssi    [por definición de insatisfactible     ]
+     p & -p  no tiene modelos             ssi    [por definición de modelo              ]
+A  I,  no I |=  p & -p                    ssi    [por definición de |=                  ]
+A  I,  eval_I( p & -p ) = 0               ssi    [por definición eval_I( & )            ]
+A  I,  min( eval_I(p),   eval_I(-p) ) = 0 ssi    [por definición eval_I( - )            ]
+A  I,  min( eval_I(p), 1-eval_I( p) ) = 0 ssi    [dado que eval_I(p) siempre es 0 ó 1, y por definicion de min   ]
+A  I,                 0               = 0 ssi    [ porque 0=0 es cierto ]
+       cierto
+
+
+
+6. Demuestra (usando sólo la definición de la LProp) que, para toda fórmula F,
+          F es tautología  ssi  -F es insatisfactible 
+   
+
+Podemos hacer una cadena de SSIs o demostrar las dos implicaciones por separado:
+   A) F es tautología       ==> ....   ==>  -F es insatisfactible
+   B) -F es insatisfactible ==> ....   ==>  F es tautología
+
+En este caso hacemos una cadena de SSIs:
+       F es tautología                    ssi    [por definición de tautología      ]
+A  I,  I es modelo de F                   ssi    [por definición de modelo          ]
+A  I,  I |= F                             ssi    [por definición de |=              ]
+A  I,  eval_I(F ) = 1                     ssi    [por aritmética                    ]
+A  I,  1 - eval_I(F ) = 0                 ssi    [por eval de un not                ]
+A  I,  eval_I( -F ) = 0                   ssi    [por definición de |=              ]
+A  I,  no I |= -F                         ssi    [por definición de modelo          ]
+A  I,  I no es modelo de -F               ssi    [por definición de insatisfactible ]
+-F es insatisfactible
+
+
+
+
+Otro:
+
+Escibiremos F y G son logicamente equivalentes  como    F === G.
+
+
+8) Demuestra   F === G   ssi   F<->G es tautología    ssi   F & -G  v  G & -F es insat
+
+Demostramos que las tres propiedades ocurren ssi    AI, eval_I(F)=eval_I(G)
+
+
+F === G                             ssi    [por definición de ===             ]
+F and G have the same models        ssi    [por definición de modelo          ]
+A  I, eval_I(F)=eval_I(G)
+
+
+F<->G es tautología                                                             ssi    [por definición de <->             ]
+(-F v G) & (-G v F)  es tautología                                              ssi    [por definición de tautología      ]
+A  I, I es modelo de (-F v G) & (-G v F)                                        ssi    [por definición de modelo          ]
+A  I, eval_I(  (-F v G) & (-G v F) ) = 1                                        ssi    [por definición de eval de un &    ]
+A  I, min( eval_I(-F v G) , eval_I(-G v F) ) = 1                                ssi    [por definición de min             ]
+A  I, eval_I(-F v G)=1   and also  eval_I(-G v F)=1                             ssi    [por definición de eval de un v    ]
+A  I, max(  eval_I(-F), eval_I(G))=1  and also  max( eval_I(-G), eval_I(F) )=1  ssi    [por definición de eval de un not  ]
+A  I, max( 1-eval_I(F), eval_I(G))=1  and also  max( 1-eval_I(G), eval_I(F))=1  ssi    [por def de max+analisis por casos ]
+A  I, eval_I(F)=eval_I(G)                                                       
+
+
+F & -G  v  G & -F es insat
+A  I, I no es modelo de (F & -G) v (G & -F)                                           ssi [por definición de modelo          ]
+A  I, eval_I(  (F & -G) v (G & -F)   = 0                                              ssi [por definición de eval de un v    ]
+A  I, max( eval_I(F & -G) , eval_I(G & -F) ) = 0                                      ssi [por definición de max             ]
+A  I, eval_I(F & -G)=0   and also  eval_I(G & -F)=0                                   ssi [por definición de eval de un &    ]
+A  I, min(  eval_I(F),   eval_I(-G))=0  and also   min( eval_I(G), eval_I(-F) )=0     ssi [por definición de eval de un not  ]
+A  I, min(  eval_I(F), 1-eval_I(G) )=0  and also   min( eval_I(G), 1-eval_I(F) ) = 0  ssi [por def de min+analisis por casos ]
+A  I, it cannot happen that eval_I(F)=1 and eval_I(G)=0      and also                 ssi [pq  no  eval_I(G) != eval_I(F)    ]
+      it cannot happen that eval_I(G)=1 and eval_I(F)=0     
+A  I, eval_I(F)=eval_I(G)
+
+
+
+
+Próximo día: ejercicios del 7 en adelante.
+
+
+
+
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+
+Labo Clase 1.
+
+
+¿Qué es SAT?
+------------
+
+SAT es el problema de decidir si una fórmula de Lógica Proposicional dada es satisfactible (tiene solución, tiene modelo).
+          --------
+
+¿Qué es una lógica?
+    -sintaxis:     - ¿qué es una fórmula F?
+    -semántica:   a- ¿qué es una interpretación I?
+                  b- ¿Cúando una I SATISFACE una F?    I |= F?
+
+
+Lógica Proposicional:
+---------------------
+
+ -Sintaxis: las fórmulas se construyen con un conjunto P de símbolos de predicado:  p,q,r,...  (o "variables" x1,x2,x3...)
+           y las conectivas:
+             & es AND
+             v es OR
+             - es NOT                Ejemplo de fórmula  F:             p & ((q v -r) & ((-p v r) & -q))
+
+ -Semántica:
+     a- Una interpretación I es una funcion I: P --> {0,1}. Nos dice cada símbolo de P si es cierto o falso.
+     b- ¿Cúando una I SATISFACE una F?    I |= F?   Cuando eval_I(F) = 1.  Cuando la evaluacion en I de F nos da 1.
+
+
+Si hay n símbolos, ¿cuántas I's distintas hay?   2^n
+
+Podemos hacer la lista de todas las posibles I's  (esa lista también se llama "tabla de verdad"):
+Por ejemplo, si P = {p,q,r}, tenemos:
+   pqr    F
+   ---   ---
+   000    0
+   001    0
+   010    0
+   011    0
+   100    0    
+   101    0
+   110    0
+   111    0
+y vemos que nuestro ejemplo de F es INsatisfactible: no tiene ninguna I que la satisfaga, no tiene ningun modelo.
+
+
+En la práctica, se hace SAT donde la F dada es una CNF (conjunctive normal form): una fórmula
+que es un conjunto (ANDs) de cláusulas (ORs de literales), donde un literal es una
+variable (literal positivo) o una variable negada (literal negativo).
+
+
+
+¿Qué hay que hacer en la primera práctica?
+-------------------------------------------
+
+Instalaros el SAT solver PicoSat:
+   sudo apt install picosat
+
+
+
+1. Mejorar la unitpropagation usando OccurLists:
+       1:    34,56,123,.....   (la lista de todas las clausulas donde sale el literal  1)
+      -1:    21,58,133,.....   (la lista de todas las clausulas donde sale el literal -1)
+       2:    etc.
+      -2
+      ...
+   Estas OccurLists las creáis al principio.
+   De esta manera, cuando haya que propagar, por ejemplo, el literal -27, visitáis sólo
+      las cláusulas que salen en la OccurList del 27, las que tienen el literal 27 positivo. 
+      (Y para propagar el 53, visitáis las cláusulas con el -53).
+
+
+2. Mejorar GetNextDecisionLiteral, para que primero decida sobre las variables que más "impacto" vayan a tener...
+
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+=======================================================================
+
+
+
